@@ -8,11 +8,11 @@ import cakehat.database.Group;
 import cakehat.database.Student;
 import cakehat.assignment.Action;
 import cakehat.assignment.TaskException;
+import cakehat.email.EmailManager.EmailAccountStatus;
 import cakehat.logging.ErrorReporter;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
-import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -40,6 +40,7 @@ class ActionsPanel extends JPanel
     private final PartPanel _partPanel;
     
     private AssignmentTreeSelection _treeSelection;
+    private Set<Student> _selectedStudents;
     private Set<Group> _selectedGroups;
     private Set<Student> _selectedStudentsNotInGroups;
     
@@ -78,21 +79,26 @@ class ActionsPanel extends JPanel
      * 
      * 
      * @param treeSelection
+     * @param selectedStudents the selected students
      * @param selectedGroups the groups that exist for the selected students
      * @param selectedStudentsNotInGroups the students who are not in any of the groups passed in. If no assignment is
      * selected (directly or indirectly) then all selected students should be in this set and selectedGroups should be
      * an empty set because groups are defined by the assignment they belong to
      */
-    void notifySelectionChanged(AssignmentTreeSelection treeSelection, Set<Group> selectedGroups,
-            Set<Student> selectedStudentsNotInGroups)
+    void notifySelectionChanged(AssignmentTreeSelection treeSelection, Set<Student> selectedStudents,
+            Set<Group> selectedGroups, Set<Student> selectedStudentsNotInGroups)
     {
         _treeSelection = treeSelection;
+        _selectedStudents = selectedStudents;
         _selectedGroups = selectedGroups;
         _selectedStudentsNotInGroups = selectedStudentsNotInGroups;
         
-        _assignmentPanel.notifySelectionChanged(treeSelection.getAssignment(), selectedGroups, selectedStudentsNotInGroups);
-        _gradableEventPanel.notifySelectionChanged(treeSelection.getGradableEvent(), selectedGroups, selectedStudentsNotInGroups);
-        _partPanel.notifySelectionChanged(treeSelection.getPart(), selectedGroups, selectedStudentsNotInGroups);
+        _assignmentPanel.notifySelectionChanged(treeSelection.getAssignment(), selectedStudents, selectedGroups,
+                selectedStudentsNotInGroups);
+        _gradableEventPanel.notifySelectionChanged(treeSelection.getGradableEvent(), selectedStudents, selectedGroups,
+                selectedStudentsNotInGroups);
+        _partPanel.notifySelectionChanged(treeSelection.getPart(), selectedStudents, selectedGroups,
+                selectedStudentsNotInGroups);
         
         _assignmentPanel.setVisible(treeSelection.getAssignment() != null);
         _gradableEventPanel.setVisible(treeSelection.getGradableEvent() != null);
@@ -104,7 +110,7 @@ class ActionsPanel extends JPanel
     
     private class AssignmentPanel extends JPanel
     {
-        private final StandardButton _emailGradingSheetButton, _manageGroupsButton;
+        private final StandardButton _emailGradingButton, _manageGroupsButton;
         private final JLabel _noActionsAvailable;
         
         AssignmentPanel()
@@ -118,8 +124,8 @@ class ActionsPanel extends JPanel
             _noActionsAvailable.setVisible(false);
             this.add(_noActionsAvailable);
             
-            _emailGradingSheetButton = new StandardButton("Email Grading Sheet", "Email Grading Sheets", IconImage.MAIL_FORWARD);
-            _emailGradingSheetButton.addActionListener(new ActionListener()
+            _emailGradingButton = new StandardButton("Email Grading", IconImage.MAIL_FORWARD);
+            _emailGradingButton.addActionListener(new ActionListener()
             {
                 @Override
                 public void actionPerformed(ActionEvent ae)
@@ -127,9 +133,21 @@ class ActionsPanel extends JPanel
                     emailGradingSheetButtonActionPerformed();
                 }
             });
-            this.add(_emailGradingSheetButton);
+            if(Allocator.getEmailManager().getEmailAccountStatus() != EmailAccountStatus.AVAILABLE)
+            {
+                _emailGradingButton.setEnabled(false);
+                if(Allocator.getEmailManager().getEmailAccountStatus() == EmailAccountStatus.NOT_CONFIGURED)
+                {
+                    _emailGradingButton.setToolTipText("Your course has not configured email");
+                }
+                else
+                {
+                    _emailGradingButton.setToolTipText("Email is not available");
+                }
+            }
+            this.add(_emailGradingButton);
             
-            _manageGroupsButton = new StandardButton("Manage Groups", null, IconImage.SYSTEM_USERS);
+            _manageGroupsButton = new StandardButton("Manage Groups", IconImage.SYSTEM_USERS);
             _manageGroupsButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -141,18 +159,16 @@ class ActionsPanel extends JPanel
             this.add(_manageGroupsButton);
         }
         
-        void notifySelectionChanged(Assignment assignment, Set<Group> selectedGroups,
+        void notifySelectionChanged(Assignment assignment, Set<Student> selectedStudents, Set<Group> selectedGroups,
                 Set<Student> selectedStudentsNotInGroups)
         {
-            boolean showGradingSheetButtons = !selectedGroups.isEmpty();
+            boolean showGradingSheetButtons = assignment != null && !selectedStudents.isEmpty();
             boolean showManageGroupsButton = assignment != null && assignment.hasGroups();
             
-            _emailGradingSheetButton.setVisible(showGradingSheetButtons);
+            _emailGradingButton.setVisible(showGradingSheetButtons);
             _manageGroupsButton.setVisible(showManageGroupsButton);
             
             _noActionsAvailable.setVisible(!(showGradingSheetButtons || showManageGroupsButton));
-            
-            _emailGradingSheetButton.updateText(selectedGroups.size() < 2);
         }
     }
     
@@ -173,7 +189,7 @@ class ActionsPanel extends JPanel
             this.add(_noActionsAvailable);
             
             //Buttons
-            _autoDistributorButton = new StandardButton("Auto Distributor", null, IconImage.DOCUMENT_SAVE_AS);
+            _autoDistributorButton = new StandardButton("Auto Distributor", IconImage.DOCUMENT_SAVE_AS);
             _autoDistributorButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -185,8 +201,8 @@ class ActionsPanel extends JPanel
             this.add(_autoDistributorButton);
         }
         
-        void notifySelectionChanged(GradableEvent gradableEvent, Set<Group> selectedGroups,
-            Set<Student> selectedStudentsNotInGroups)
+        void notifySelectionChanged(GradableEvent gradableEvent, Set<Student> selectedStudents,
+                Set<Group> selectedGroups, Set<Student> selectedStudentsNotInGroups)
         {   
             boolean showButtons = gradableEvent != null && gradableEvent.hasDigitalHandins();
             
@@ -209,8 +225,8 @@ class ActionsPanel extends JPanel
             _builtinButtonsPanel = new JPanel();
             _builtinButtonsPanel.setLayout(new BoxLayout(_builtinButtonsPanel, BoxLayout.Y_AXIS));
             _builtinButtonsPanel.setAlignmentX(LEFT_ALIGNMENT);
-            StandardButton manualDistributorButton = new StandardButton("Manual Distributor", null,
-                        IconImage.DOCUMENT_PROPERTIES);
+            StandardButton manualDistributorButton = new StandardButton("Manual Distributor",
+                    IconImage.DOCUMENT_PROPERTIES);
             manualDistributorButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -235,7 +251,7 @@ class ActionsPanel extends JPanel
             this.add(_handinActionsPanel);
         }
         
-        void notifySelectionChanged(final Part part, final Set<Group> selectedGroups,
+        void notifySelectionChanged(final Part part, Set<Student> selectedStudents, final Set<Group> selectedGroups,
                 Set<Student> selectedStudentsNotInGroups)
         {
             _builtinButtonsPanel.setVisible(part != null);
@@ -246,7 +262,7 @@ class ActionsPanel extends JPanel
             {
                 for(final Action action : part.getActions())
                 {
-                    StandardButton actionButton = new StandardButton(action.getName(), null, action.getIcon());
+                    StandardButton actionButton = new StandardButton(action.getName(), action.getIcon());
 
                     //Determine if it should be enabled
                     boolean enableButton = false;
@@ -314,15 +330,8 @@ class ActionsPanel extends JPanel
     {
         //Save the current grading sheet so that GRD generation reflects any changes made
         _adminView.saveDisplayedGradingSheet();
-            
-        try
-        {
-            Allocator.getGradingServices().emailGRDFiles(_treeSelection.getAssignment(), _selectedGroups);
-        }
-        catch(ServicesException ex)
-        {
-            ErrorReporter.report(ex);
-        }
+        
+        new EmailGradingView(_treeSelection, _selectedStudents, _adminView);
     }
     
     private void manageGroupsButtonActionPerformed()
@@ -333,38 +342,20 @@ class ActionsPanel extends JPanel
     private static class StandardButton extends JPanel
     {
         private final JButton _button;
-        private final String _singleText, _pluralText;
         
-        StandardButton(String singleText, String pluralText, IconImage image)
+        StandardButton(String singleText, IconImage image)
         {
-            _singleText = "<html><b>" + singleText + "</b></html>";
-            _pluralText = "<html><b>" + pluralText + "</b></html>";
-            
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             this.setAlignmentX(LEFT_ALIGNMENT);
             
             this.add(Box.createVerticalStrut(5));
             
-            _button = new JButton();
+            _button = new JButton("<html><b>" + singleText + "</b></html>");
             _button.setMargin(new Insets(2, 10, 2, 10));
             _button.setIcon(IconLoader.loadIcon(IconSize.s16x16, image));
             _button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
             _button.setIconTextGap(10);
             this.add(_button);
-            
-            this.updateText(true);
-        }
-        
-        final void updateText(boolean showSingle)
-        {
-            if(showSingle)
-            {
-                _button.setText(_singleText);
-            }
-            else
-            {
-                _button.setText(_pluralText);
-            }
         }
         
         final void addActionListener(ActionListener listener)

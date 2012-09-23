@@ -8,6 +8,7 @@ import cakehat.database.GroupGradingSheet;
 import cakehat.database.Student;
 import cakehat.email.EmailManager.EmailAccountStatus;
 import cakehat.logging.ErrorReporter;
+import cakehat.services.EmailGradingTask;
 import cakehat.services.ServicesException;
 import cakehat.views.grader.PartAndGroupPanel.PartAndGroupSelectionListener;
 import com.google.common.collect.HashMultimap;
@@ -15,16 +16,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import javax.activation.DataSource;
-import javax.mail.MessagingException;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -33,12 +30,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import org.joda.time.DateTime;
+import javax.swing.KeyStroke;
 import support.ui.FormattedLabel;
-import support.ui.ModalDialog;
 import support.ui.PreferredHeightJPanel;
-import support.utils.AlwaysAcceptingFileFilter;
-import support.utils.ArchiveUtilities.ArchiveFormat;
+import support.ui.ProgressDialog;
 
 /**
  *
@@ -64,7 +59,7 @@ class NotifyStudentsPanel extends JPanel
         
         _subjectField = new JTextField();
         _bodyTextArea = new JTextArea();
-        _attachHandinCheckBox = new JCheckBox("Attach student's digital handin");
+        _attachHandinCheckBox = new JCheckBox("Attach digital handins");
         _sendButton = new JButton("Send email");
         
         this.setLayout(new BorderLayout(0, 0));
@@ -114,6 +109,10 @@ class NotifyStudentsPanel extends JPanel
         //Body
         _bodyTextArea.setAlignmentX(LEFT_ALIGNMENT);
         _bodyTextArea.setBorder(BorderFactory.createEtchedBorder());
+        _bodyTextArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                    ImmutableSet.of(KeyStroke.getKeyStroke("pressed TAB")));
+        _bodyTextArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                    ImmutableSet.of(KeyStroke.getKeyStroke("shift pressed TAB")));
         //Setting minimum size is needed to work around issue with turning on line wrapping preventing text area from
         //decreasing in size once it has increased in size
         _bodyTextArea.setMinimumSize(new Dimension(0, 0));
@@ -211,144 +210,23 @@ class NotifyStudentsPanel extends JPanel
         }
     }
     
-    private void sendEmail(Part part, Set<Group> groups) throws ServicesException
+    private void sendEmail(Part part, Set<Group> groups)
     {
-        Set<Student> allStudents = new HashSet<Student>();
+        Set<Part> parts = ImmutableSet.of(part);
+        Set<Student> students = new HashSet<Student>();
         for(Group group : groups)
         {
-            allStudents.addAll(group.getMembers());
-        }
-        Map<Student, String> gradingSheets = Allocator.getGradingServices()
-                .generateGRD(part.getAssignment(), allStudents);
-        
-        Set<Student> successStudents = new HashSet<Student>();
-        Set<Student> failStudents = new HashSet<Student>();
-        
-        boolean attachHandins = _attachHandinCheckBox.isSelected();
-        for(Group group : groups)
-        {
-            boolean proceed = true;
-            Set<DataSource> attachments = new HashSet<DataSource>();
-            if(attachHandins)
+            for(Student student : group)
             {
-                try
-                {
-                    //No digital handin may exist - it is valid for a group to not have a handin for gradable event that
-                    //does have digital handins (for example - student did not turn in the assignment)
-                    if(part.getGradableEvent().hasDigitalHandin(group))
-                    {
-                        //It is possible the group's digital handin has not yet been unarchived (if no action has been
-                        //taken on it)
-                        part.unarchive(_graderView, group, true);
+                students.add(student);
+            }
+        }
+        
+        EmailGradingTask task = new EmailGradingTask(parts, students, null, _subjectField.getText(),
+            _bodyTextArea.getText(), _attachHandinCheckBox.isSelected(), true);
 
-                        //Create zip attachment of the unarchive directory 
-                        File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
-                        DataSource digitalHandin = Allocator.getArchiveUtilities().createArchiveDataSource(
-                                part.getFullDisplayName() + " [" + group.getName() + "]",
-                                ArchiveFormat.ZIP, unarchiveDir, new AlwaysAcceptingFileFilter());
-                        attachments.add(digitalHandin);
-                    }
-                }
-                catch(IOException e)
-                {
-                    proceed = false;
-                    failStudents.addAll(group.getMembers());
-                    ErrorReporter.report("Unable to zip up digital handin\n" +
-                            "Part: " + part.getFullDisplayName() + "\n" +
-                            "Group: " + group, e);
-                }
-            }
-            
-            if(proceed)
-            {   
-                for(Student student : group)
-                {
-                    String body = _bodyTextArea.getText().replaceAll("\n", "<br>") + "<br><br>" +
-                                  gradingSheets.get(student);
-                    try
-                    {
-                        Allocator.getEmailManager().send(Allocator.getUserServices().getUser().getEmailAddress(), //from
-                            ImmutableSet.of(student.getEmailAddress()), //to
-                            null, //cc
-                            null, //bcc
-                            _subjectField.getText(), //subject
-                            body, //body
-                            attachments); //attachments
-                        successStudents.add(student);
-                    }
-                    catch(MessagingException e)
-                    {
-                        failStudents.add(student);
-                        ErrorReporter.report("Unable to send email to " + student.getEmailAddress(), e);
-                    }
-                }
-            }
-        }
-        
-        //Show confirmation of email sending and send an email notifying the notify addresses
-        StringBuilder sendCompleteMessage = new StringBuilder("Email sending complete\n\n");
-        if(!successStudents.isEmpty())
-        {
-            sendCompleteMessage.append("Succesfully sent to:\n");
-            
-            StringBuilder notifyEmailMessage = new StringBuilder("At ").append(DateTime.now().toString()).append(", ");
-            notifyEmailMessage.append(Allocator.getUserServices().getUser().getLogin()).append(" submitted grading for ");
-            notifyEmailMessage.append(part.getFullDisplayName()).append(" for the following students: <blockquote>");
-            
-            for(Student student : successStudents)
-            {
-                sendCompleteMessage.append(student.getLogin());
-                sendCompleteMessage.append(" - ");
-                sendCompleteMessage.append(student.getName());
-                sendCompleteMessage.append(" (");
-                sendCompleteMessage.append(student.getEmailAddress().getAddress());
-                sendCompleteMessage.append(")\n");
-                notifyEmailMessage.append(student.getLogin());
-                notifyEmailMessage.append(" - ");
-                notifyEmailMessage.append(student.getName());
-                notifyEmailMessage.append(" (");
-                notifyEmailMessage.append(student.getEmailAddress().getAddress());
-                notifyEmailMessage.append(")<br/>");
-            }
-            
-            notifyEmailMessage.append("</blockquote>");
-            notifyEmailMessage.append("The following message was sent to the students: <blockquote>");
-            notifyEmailMessage.append(_bodyTextArea.getText().replaceAll("\n", "<br>")).append("</blockquote>");
-            notifyEmailMessage.append("Grading sheets were included");
-            if (attachHandins) {
-                notifyEmailMessage.append(" and the students' handins were attached");
-            }
-            notifyEmailMessage.append(".");
-
-            try
-            {
-                Allocator.getEmailManager().send(Allocator.getUserServices().getUser().getEmailAddress(),
-                                                 Allocator.getEmailManager().getNotifyAddresses(),
-                                                 ImmutableSet.of(Allocator.getUserServices().getUser().getEmailAddress()),
-                                                 null,
-                                                 _subjectField.getText(),
-                                                 notifyEmailMessage.toString(),
-                                                 null);
-            }
-            catch(MessagingException e)
-            {
-                ErrorReporter.report("Unable to send an email to the notify addresses", e);
-            }
-        }
-        if(!failStudents.isEmpty())
-        {
-            sendCompleteMessage.append("Failed to send to:\n");
-            for(Student student : failStudents)
-            {
-                sendCompleteMessage.append(student.getLogin());
-                sendCompleteMessage.append(" - ");
-                sendCompleteMessage.append(student.getName());
-                sendCompleteMessage.append(" (");
-                sendCompleteMessage.append(student.getEmailAddress().getAddress());
-                sendCompleteMessage.append(")\n");
-            }
-        }
-        ModalDialog.showMessage(null, "Email Sent", sendCompleteMessage.toString());
         _backAction.run();
+        
+        ProgressDialog.show(_graderView, _graderView, "Emailing Grading", task, ErrorReporter.getExceptionReporter());
     }
 }

@@ -10,6 +10,7 @@ import java.io.StringWriter;
 import javax.mail.MessagingException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
+import support.ui.ProgressDialog;
 
 /**
  * Manages displaying and reporting of cakehat errors.
@@ -26,6 +27,25 @@ public class ErrorReporter
     public static void initialize()
     {
         CakehatUncaughtExceptionHandler.registerHandler();
+    }
+    
+    /**
+     * Returns an exception reporter that is backed by this class.
+     * 
+     * @return exception reporter
+     */
+    public static ProgressDialog.ExceptionReporter getExceptionReporter()
+    {
+        ProgressDialog.ExceptionReporter reporter = new ProgressDialog.ExceptionReporter()
+        {
+            @Override
+            public void report(String message, Exception exception)
+            {
+                report(message, exception);
+            }
+        };
+        
+        return reporter;
     }
     
     /**

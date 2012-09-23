@@ -46,20 +46,6 @@ public interface GradingServices
      * @return
      */
     public CITPrinter getDefaultPrinter();
-    
-    /**
-     * Creates and emails GRD files (plain text files with a .txt file extension) for each student in the given groups
-     * for the assignment they belong to.
-     * <br/><br/>
-     * If the groups do not all belong to the assignment an exception will be thrown.
-     * 
-     * @param asgn
-     * @param groups
-     * @throws ServicesException 
-     */
-    public void emailGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException;
-    
-    public Map<Student, String> generateGRD(Assignment asgn, Set<Student> students) throws ServicesException;
 
     /**
      * Prompts the user to a select a printer.
@@ -75,6 +61,8 @@ public interface GradingServices
      * @return printer selected
      */
     public CITPrinter getPrinter(String message);
+    
+    public Map<Student, String> generateGRD(Assignment asgn, Set<Student> students) throws ServicesException;
 
     /**
      * Returns whether or not it is OK to distribute the given group to the given TA. It is always OK to distribute the

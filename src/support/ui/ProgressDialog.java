@@ -1,6 +1,7 @@
 package support.ui;
 
-import java.awt.Color;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Window;
@@ -15,6 +16,9 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.text.html.HTMLEditorKit;
 import support.utils.LongRunningTask;
 
 /**
@@ -31,8 +35,10 @@ public class ProgressDialog extends JDialog
     
     private final ExceptionReporter _exceptionReporter;
     private final JProgressBar _progressBar;
-    private final JLabel _progressStatusLabel;
+    private final JTextPane _progressStatusPane;
     private final JLabel _stepDescriptionLabel;
+    private final Component _progressPad;
+    
     private final JButton _cancelButton;
     private final JButton _closeButton;
     
@@ -42,30 +48,30 @@ public class ProgressDialog extends JDialog
      * @param owner the owner of this dialog, may be {@code null}
      * @param positionRelativeTo the window this dialog will be positioned relative to, may be {@code null}
      * @param title the title of this dialog
-     * @param message the message to be displayed to the user
      * @param task the task being displayed, do <strong>not</strong> call {@link LongRunningTask#start()} on it - that
      * will be done by this dialog
      * @param exceptionReporter exceptions encountered while running the task will be provided to this reporter
      */
-    public static void show(Window owner, Window positionRelativeTo, String title, String message, LongRunningTask task,
+    public static void show(Window owner, Window positionRelativeTo, String title, LongRunningTask task,
             ExceptionReporter exceptionReporter)
     {
-        new ProgressDialog(owner, positionRelativeTo, title, message, task, exceptionReporter);
+        new ProgressDialog(owner, positionRelativeTo, title, task, exceptionReporter);
     }
     
-    private ProgressDialog(Window owner, Window positionRelativeTo, String title, String message,
-            final LongRunningTask task, ExceptionReporter exceptionReporter)
+    private ProgressDialog(Window owner, Window positionRelativeTo, String title, final LongRunningTask task,
+            ExceptionReporter exceptionReporter)
     {
         super(owner, title);
         
         //Initialize
         _exceptionReporter = exceptionReporter;
         _progressBar = new JProgressBar();
-        _progressStatusLabel = new JLabel();
+        _progressStatusPane = new JTextPane();
+        _progressPad = Box.createVerticalStrut(5);
         _stepDescriptionLabel = new JLabel();
         _cancelButton = new JButton("Cancel");
         _closeButton = new JButton("Close");
-        initUI(message, task);
+        initUI(task);
         initListening(task);
         
         //Cancel the task on close
@@ -90,20 +96,11 @@ public class ProgressDialog extends JDialog
         task.start();
     }
     
-    private void initUI(String message, final LongRunningTask task)
+    private void initUI(final LongRunningTask task)
     {
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         this.add(new PaddingPanel(contentPanel));
-            
-        //Message
-        JLabel messageLabel = new JLabel();
-        messageLabel.setText(message);
-        messageLabel.setHorizontalAlignment(JLabel.CENTER);
-        messageLabel.setAlignmentX(CENTER_ALIGNMENT);
-        contentPanel.add(messageLabel);
-        
-        contentPanel.add(Box.createVerticalStrut(5));
         
         //Step description
         _stepDescriptionLabel.setPreferredSize(new Dimension(500, 20));
@@ -112,19 +109,29 @@ public class ProgressDialog extends JDialog
         _stepDescriptionLabel.setAlignmentX(CENTER_ALIGNMENT);
         contentPanel.add(_stepDescriptionLabel);
         
-        contentPanel.add(Box.createVerticalStrut(5)); 
+        contentPanel.add(_progressPad); 
         
         //Progress bar
         _progressBar.setPreferredSize(new Dimension(500, 20));
         _progressBar.setAlignmentX(CENTER_ALIGNMENT);
         contentPanel.add(_progressBar);
         
-        //Status label
-        _progressStatusLabel.setPreferredSize(new Dimension(500, 20));
-        _progressStatusLabel.setHorizontalAlignment(JLabel.CENTER);
-        _progressStatusLabel.setVisible(false);
-        _progressStatusLabel.setAlignmentX(CENTER_ALIGNMENT);
-        contentPanel.add(_progressStatusLabel);
+        //Status pane
+        HTMLEditorKit htmlEditorKit = new HTMLEditorKit();
+        _progressStatusPane.setEditable(false);
+        _progressStatusPane.setEditorKit(htmlEditorKit);
+        _progressStatusPane.setDocument(htmlEditorKit.createDefaultDocument());
+        _progressStatusPane.setEditable(false);
+        _progressStatusPane.setFocusable(false);
+        _progressStatusPane.setAutoscrolls(true);
+        _progressStatusPane.setBackground(contentPanel.getBackground());
+        
+        JScrollPane progressStatusScrollPane = new JScrollPane(_progressStatusPane);
+        progressStatusScrollPane.getViewport().setBackground(contentPanel.getBackground());
+        progressStatusScrollPane.setBackground(contentPanel.getBackground());
+        progressStatusScrollPane.setBorder(null);
+        progressStatusScrollPane.setAlignmentX(CENTER_ALIGNMENT);
+        contentPanel.add(progressStatusScrollPane, BorderLayout.CENTER);
         
         contentPanel.add(Box.createVerticalStrut(10));
         
@@ -221,22 +228,42 @@ public class ProgressDialog extends JDialog
             }
 
             @Override
-            public void taskCompleted()
+            public void taskStepFailed(final int currStep, final Exception cause, final String msg)
             {
                 EventQueue.invokeLater(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        _stepDescriptionLabel.setText(" ");
+                        _progressBar.setValue(currStep);
+                        
+                        _exceptionReporter.report(msg, cause);
+                    }
+                });
+            }
+
+            @Override
+            public void taskCompleted(final String message)
+            {
+                EventQueue.invokeLater(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        _stepDescriptionLabel.setVisible(false);
+                        _progressPad.setVisible(false);
                         _progressBar.setVisible(false);
                         
-                        _progressStatusLabel.setText("Complete");
-                        _progressStatusLabel.setForeground(new Color(0, 179, 0));
-                        _progressStatusLabel.setVisible(true);
+                        _progressStatusPane.setText(message);
+                        _progressStatusPane.setVisible(true);
+                        _progressStatusPane.setCaretPosition(0);
                         
                         _cancelButton.setVisible(false);
                         _closeButton.setVisible(true);
+                        
+                        Dimension size = ProgressDialog.this.getSize();
+                        size.height *= 2;
+                        ProgressDialog.this.setSize(size);
                     }
                 });
             }
@@ -249,12 +276,13 @@ public class ProgressDialog extends JDialog
                     @Override
                     public void run()
                     {
-                        _stepDescriptionLabel.setText(" ");
+                        _stepDescriptionLabel.setVisible(false);
+                        _progressPad.setVisible(false);
                         _progressBar.setVisible(false);
                         
-                        _progressStatusLabel.setText("Canceled");
-                        _progressStatusLabel.setForeground(new Color(179, 0, 0));
-                        _progressStatusLabel.setVisible(true);
+                        _progressStatusPane.setText("<html><center><h2><font face='dialog'>Canceled" +
+                                "</font></h2></center></html>");
+                        _progressStatusPane.setVisible(true);
                         
                         _cancelButton.setVisible(false);
                         _closeButton.setVisible(true);
@@ -270,12 +298,13 @@ public class ProgressDialog extends JDialog
                     @Override
                     public void run()
                     {
-                        _stepDescriptionLabel.setText(" ");
+                        _stepDescriptionLabel.setVisible(false);
+                        _progressPad.setVisible(false);
                         _progressBar.setVisible(false);
                         
-                        _progressStatusLabel.setText("Failure Occurred");
-                        _progressStatusLabel.setForeground(Color.RED);
-                        _progressStatusLabel.setVisible(true);
+                        _progressStatusPane.setText("<html><center><h2><font face='dialog'>Failure Occurred" +
+                                "</font></h2></center></html>");
+                        _progressStatusPane.setVisible(true);
                         
                         _cancelButton.setVisible(false);
                         _closeButton.setVisible(true);
