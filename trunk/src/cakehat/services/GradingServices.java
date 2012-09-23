@@ -62,8 +62,6 @@ public interface GradingServices
      */
     public CITPrinter getPrinter(String message);
     
-    public Map<Student, String> generateGRD(Assignment asgn, Set<Student> students) throws ServicesException;
-
     /**
      * Returns whether or not it is OK to distribute the given group to the given TA. It is always OK to distribute the
      * group if no member is on the TA's blacklist, or if the given TA is null (meaning that the group is being
