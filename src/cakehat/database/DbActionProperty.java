@@ -1,7 +1,5 @@
 package cakehat.database;
 
-import java.util.Collections;
-
 /**
  * Represents an action property of an action as it is represented in the database and configuration manager.
  * 

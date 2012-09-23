@@ -2,7 +2,6 @@ package cakehat.database;
 
 import com.google.common.collect.SetMultimap;
 import java.util.ArrayList;
-import java.io.File;
 import org.joda.time.DateTime;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -25,11 +24,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.joda.time.Period;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.easymock.EasyMock.*;
 
 /**
  *
@@ -235,16 +232,6 @@ public class DataServicesTest {
         _dataServices.updateDataCache();
         Collection<Student> students = _dataServices.getStudents();
         this.assertDbStudentCollectionEqual(ImmutableSet.of(dbstudent1, dbstudent2), students);
-    }
-    
-    @Test
-    public void testIsStudentLoginInDatabase() throws SQLException, ServicesException {
-        DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
-        _database.putStudents(ImmutableSet.of(dbstudent1));
-        _dataServices.updateDataCache();
-        
-        assertTrue(_dataServices.isStudentLoginInDatabase(dbstudent1.getLogin()));
-        assertFalse(_dataServices.isStudentLoginInDatabase("imaginary login"));
     }
     
     @Test
@@ -838,123 +825,6 @@ public class DataServicesTest {
         dbParts.add(_dbPartA1);
         dbParts.add(_dbPartA2);
         this.assertPartCollectionEqual(dbParts, _dataServices.getAssignedGroups(_userTA).keySet());
-    }
-    
-    @Test
-    public void testGetDeadlineInfoForFixedDeadline() throws SQLException, ServicesException {
-        DateTime onTime = new DateTime(2012, 2, 14, 5, 5, 5);
-        DateTime early = new DateTime(2012, 2, 12, 5, 5, 5);
-        DateTime late = new DateTime(2012, 2, 16, 5, 5, 5);
-        
-        double earlyPoints = 10.0;
-        double latePoints = -5.0;
-        
-        DbGradableEvent event = createMock(DbGradableEvent.class);
-        expect(event.getAssignment()).andReturn(_dbAsgnA).anyTimes();
-        expect(event.getDeadlineType()).andReturn(DeadlineInfo.Type.FIXED).anyTimes();
-        expect(event.getEarlyDate()).andReturn(early).anyTimes();
-        expect(event.getOnTimeDate()).andReturn(onTime).anyTimes();
-        expect(event.getLateDate()).andReturn(late).anyTimes();
-        expect(event.getLatePoints()).andReturn(latePoints).anyTimes();
-        expect(event.getEarlyPoints()).andReturn(earlyPoints).anyTimes();
-        expect(event.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(event.getId()).andReturn(1).anyTimes();
-        expect(event.getOrder()).andReturn(1).anyTimes();
-        expect(event.getDirectory()).andReturn(new File("")).anyTimes();
-        expect(event.getLatePeriod()).andReturn(null).anyTimes();
-        replay(event);
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(event.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(event.getId()).anyTimes();
-        replay(eventA);
-        
-        _database.putGradableEvents(ImmutableSet.of(event));
-        
-        DeadlineInfo info = _dataServices.getDeadlineInfo(eventA);
-        assertEquals(DeadlineInfo.Type.FIXED, info.getType()); 
-        assertTrue(info.getEarlyDate().equals(early));
-        assertTrue(info.getOnTimeDate().equals(onTime));
-        assertTrue(info.getLateDate().equals(late));
-        assertEquals(earlyPoints, info.getEarlyPoints(), 0.00001);
-        assertEquals(latePoints, info.getLatePoints(), 0.00001);  
-        assertNull(info.getLatePeriod());
-    }
-    
-    @Test
-    public void testGetDeadlineInfoForVariableDeadline() throws SQLException, ServicesException {
-        DateTime onTime = new DateTime(2012, 2, 14, 5, 5, 5);
-        DateTime late = new DateTime(2012, 2, 16, 5, 5, 5);
-        
-        Period latePeriod = Period.days(3);
-        
-        double earlyPoints = 10.0;
-        double latePoints = -5.0;
-        
-        DbGradableEvent event = createMock(DbGradableEvent.class);
-        expect(event.getAssignment()).andReturn(_dbAsgnA).anyTimes();
-        expect(event.getDeadlineType()).andReturn(DeadlineInfo.Type.VARIABLE).anyTimes();
-        expect(event.getEarlyDate()).andReturn(null).anyTimes();
-        expect(event.getOnTimeDate()).andReturn(onTime).anyTimes();
-        expect(event.getLateDate()).andReturn(late).anyTimes();
-        expect(event.getLatePoints()).andReturn(latePoints).anyTimes();
-        expect(event.getEarlyPoints()).andReturn(null).anyTimes();
-        expect(event.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(event.getId()).andReturn(1).anyTimes();
-        expect(event.getOrder()).andReturn(1).anyTimes();
-        expect(event.getDirectory()).andReturn(new File("")).anyTimes();
-        expect(event.getLatePeriod()).andReturn(latePeriod).anyTimes();
-        replay(event);
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(event.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(event.getId()).anyTimes();
-        replay(eventA);
-        
-        _database.putGradableEvents(ImmutableSet.of(event));
-        
-        DeadlineInfo info = _dataServices.getDeadlineInfo(eventA);
-        assertEquals(DeadlineInfo.Type.VARIABLE, info.getType()); 
-        assertNull(info.getEarlyDate());
-        assertTrue(info.getOnTimeDate().equals(onTime));
-        assertTrue(info.getLateDate().equals(late));
-        assertNull(info.getEarlyPoints());
-        assertEquals(latePoints, info.getLatePoints(), 0.00001);  
-        assertEquals(latePeriod, info.getLatePeriod());
-    }
-    
-    @Test
-    public void testGetDeadlineInfoForNoDeadline() throws ServicesException, SQLException {
-        DbGradableEvent event = createMock(DbGradableEvent.class);
-        expect(event.getAssignment()).andReturn(_dbAsgnA).anyTimes();
-        expect(event.getDeadlineType()).andReturn(DeadlineInfo.Type.NONE).anyTimes();
-        expect(event.getEarlyDate()).andReturn(null).anyTimes();
-        expect(event.getOnTimeDate()).andReturn(null).anyTimes();
-        expect(event.getLateDate()).andReturn(null).anyTimes();
-        expect(event.getLatePoints()).andReturn(null).anyTimes();
-        expect(event.getEarlyPoints()).andReturn(null).anyTimes();
-        expect(event.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(event.getId()).andReturn(1).anyTimes();
-        expect(event.getOrder()).andReturn(1).anyTimes();
-        expect(event.getDirectory()).andReturn(new File("")).anyTimes();
-        expect(event.getLatePeriod()).andReturn(null).anyTimes();
-        replay(event);
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(event.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(event.getId()).anyTimes();
-        replay(eventA);
-        
-        _database.putGradableEvents(ImmutableSet.of(event));
-        
-        DeadlineInfo info = _dataServices.getDeadlineInfo(eventA);
-        assertEquals(DeadlineInfo.Type.NONE, info.getType());
-        assertNull(info.getEarlyDate());
-        assertNull(info.getOnTimeDate());
-        assertNull(info.getLateDate());
-        assertNull(info.getEarlyPoints());
-        assertNull(info.getLatePoints());  
-        assertNull(info.getLatePeriod());
     }
     
     @Test

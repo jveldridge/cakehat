@@ -2,7 +2,6 @@ package cakehat.services;
 
 import cakehat.Allocator;
 import cakehat.CakehatSession;
-import cakehat.assignment.Assignment;
 import cakehat.assignment.GradableEvent;
 import cakehat.database.GradableEventOccurrence;
 import cakehat.database.Group;
@@ -479,6 +478,7 @@ public class GradingServicesImpl implements GradingServices
         return toReturn;
     } 
     
+
     /**
      * panel containing student login, resolution radio buttons, and radio button group.
      * used in the warning dialog for issue handins

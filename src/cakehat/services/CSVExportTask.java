@@ -1,12 +1,11 @@
 package cakehat.services;
 
 import cakehat.Allocator;
-import cakehat.database.DeadlineInfo;
-import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.database.Extension;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import cakehat.assignment.Assignment;
+import cakehat.assignment.DeadlineInfo.DeadlineResolution;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.database.GroupGradingSheet;
@@ -348,7 +347,7 @@ public class CSVExportTask extends LongRunningTask
                     }
                     
                     //Deadline
-                    DeadlineResolution resolution = data._deadlines.get(ge).apply(
+                    DeadlineResolution resolution = ge.getDeadlineInfo().apply(
                             data._occurrenceDates.get(ge).get(group),
                             data._extensions.get(ge).get(group));
                     row.add(resolution.getTimeStatus().toString());
@@ -412,7 +411,6 @@ public class CSVExportTask extends LongRunningTask
         private final Map<Assignment, Map<Student, Group>> _groups = new HashMap<Assignment, Map<Student, Group>>();
         private final Map<Part, Map<Group, GroupGradingSheet>> _partGrades =
                 new HashMap<Part, Map<Group, GroupGradingSheet>>();
-        private final Map<GradableEvent, DeadlineInfo> _deadlines = new HashMap<GradableEvent, DeadlineInfo>();
         private final Map<GradableEvent, Map<Group, DateTime>> _occurrenceDates =
                 new HashMap<GradableEvent, Map<Group, DateTime>>();
         private final Map<GradableEvent, Map<Group, Extension>> _extensions =
@@ -439,9 +437,6 @@ public class CSVExportTask extends LongRunningTask
                 
                 for(GradableEvent ge : asgn)
                 {
-                    //Deadlines
-                    _deadlines.put(ge, Allocator.getDataServices().getDeadlineInfo(ge));
-
                     //Occurrence dates
                     _occurrenceDates.put(ge, Allocator.getGradingServices().getOccurrenceDates(ge, groups));
 
