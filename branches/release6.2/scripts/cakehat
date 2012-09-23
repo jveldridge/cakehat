@@ -1,0 +1,27 @@
+#!/bin/bash
+#==============================================================================
+# Runs the latest version of cakehat. Resolves a symbolic path to the latest
+# cakehat version into an absolute path and then runs the cakehat.jar that
+# is in that directory. The resolution from symbolic to absolute path is done
+# so that the JVM will continue to reference the same version of cakehat even
+# if a newer version of cakehat is released (and the symbolic path is updated
+# to point to that release) while a user is running cakehat.
+#
+# Note: This script makes use of realpath, which is not available on OS X.
+#
+# author:  jak2 (Joshua Kaplan)
+# created: August 22, 2012
+# last updated: August 22, 2012
+#==============================================================================
+
+#Relative path to the directory containing the latest version of cakehat
+relative_path_latest="/contrib/projects/cakehat/releases/latest/"
+
+#Absolute the path to the directory containing latest version of cakehat
+absolute_path_latest=$(realpath $relative_path_latest)
+
+#Absolute path to the latest cakehat jar
+cakehat_path=$absolute_path_latest"/cakehat.jar"
+
+#Runs the cakehat jar, passing along any arguments provided to this script
+java -jar $cakehat_path "$@"
