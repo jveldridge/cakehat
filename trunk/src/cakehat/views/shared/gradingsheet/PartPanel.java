@@ -64,7 +64,7 @@ class PartPanel extends GradingSheetPanel
     private final GroupGradingSheet _groupSheet;
     private boolean _hasUnsavedChanges = false;
     
-    PartPanel(Part part, Group group, boolean isAdmin, boolean showBorder)
+    PartPanel(Part part, Group group, boolean isAdmin, boolean showBorder) throws GradingSheetInitializationException
     {   
         super(Color.WHITE, showBorder);
         
@@ -82,30 +82,23 @@ class PartPanel extends GradingSheetPanel
         _isAdmin = isAdmin;
         
         _groupSheet = loadGradingSheet();
-        if(_groupSheet != null)
-        {
-            initHeaderUI();
-            addContent(Box.createVerticalStrut(10));
-            initGradingSheetUI();
-        }
+        initHeaderUI();
+        addContent(Box.createVerticalStrut(10));
+        initGradingSheetUI();
     }
     
-    private GroupGradingSheet loadGradingSheet()
+    private GroupGradingSheet loadGradingSheet() throws GradingSheetInitializationException
     {
-        GroupGradingSheet sheet = null;
         try
         {
-            sheet = Allocator.getDataServices().getGroupGradingSheet(_part, _group);
+            return Allocator.getDataServices().getGroupGradingSheet(_part, _group);
         }
         catch(ServicesException ex)
         {
-            addErrorMessagePanel("Unable to retrieve grading sheet");
-            ErrorReporter.report("Unable to retrive group grading sheet.\n" +
+            throw new GradingSheetInitializationException("Unable to retrive group grading sheet.\n" +
                 "Part: " + _part.getFullDisplayName() + "\n" +
-                "Group: " + _group.getName(), ex);
+                "Group: " + _group.getName(), ex, "Unable to retrieve grading sheet");
         }
-                
-        return sheet;
     }
     
     private void initHeaderUI()
@@ -426,31 +419,19 @@ class PartPanel extends GradingSheetPanel
     @Override
     Double getEarned()
     {
-        Double earned = null;
-        if(_groupSheet != null)
-        {
-            earned = _groupSheet.getEarned();
-        }
-        
-        return earned;
+        return _groupSheet.getEarned();
     }
 
     @Override
     Double getOutOf()
     {
-        Double outOf = null;
-        if(_groupSheet != null)
-        {
-            outOf = _groupSheet.getGradingSheet().getOutOf();
-        }
-        
-        return outOf;
+        return _groupSheet.getGradingSheet().getOutOf();
     }
     
     @Override
     public void save()
     {
-        if(_hasUnsavedChanges && _groupSheet != null)
+        if(_hasUnsavedChanges)
         {
             try
             {
