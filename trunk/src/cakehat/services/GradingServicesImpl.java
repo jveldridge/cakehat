@@ -26,7 +26,6 @@ import cakehat.database.GroupGradingSheet;
 import cakehat.database.GroupGradingSheet.GroupSectionComments;
 import cakehat.database.GroupGradingSheet.GroupSubsectionEarned;
 import cakehat.database.Student;
-import cakehat.email.EmailManager.EmailAccountStatus;
 import cakehat.gradingsheet.GradingSheetDetail;
 import cakehat.gradingsheet.GradingSheetSection;
 import cakehat.gradingsheet.GradingSheetSubsection;
@@ -53,10 +52,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -529,8 +525,9 @@ public class GradingServicesImpl implements GradingServices
     private String generateGrd(Assignment asgn, Student student, Map<Part, GroupGradingSheet> gradingSheets) throws ServicesException {
         Group group = Allocator.getDataServices().getGroup(asgn, student) ;
 
-        StringBuilder grdBuilder = new StringBuilder();
-        grdBuilder.append("<center>").append(group.getAssignment().getName()).append(" Grading Sheet</center>");
+        StringBuilder grdBuilder = new StringBuilder("<table width='600px'><tr><td style='text-align:center'>");
+        grdBuilder.append(group.getAssignment().getName()).append(" Grading Sheet");
+        grdBuilder.append("</td></tr></table>");
         
         grdBuilder.append("<p><b>Student:</b> ").append(student.getName());
         grdBuilder.append(" (").append(student.getLogin()).append(')');
