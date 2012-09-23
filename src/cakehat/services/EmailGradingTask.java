@@ -162,7 +162,7 @@ public class EmailGradingTask extends LongRunningTask
         
         //Grading sheets
         notifyTaskStepStarted("Generating grading sheets");
-        Map<Student, String> gradingSheets = Allocator.getGradingServices().generateGRD(_asgn, _students);
+        Map<Student, String> gradingSheets = Allocator.getGrdGenerator().generateGRD(_asgn, _students);
         notifyTaskStepCompleted();
         
         checkAttemptCancel();

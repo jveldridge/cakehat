@@ -17,6 +17,8 @@ import cakehat.database.DataServicesImpl;
 import cakehat.services.FileSystemServices;
 import cakehat.services.FileSystemServicesImpl;
 import cakehat.services.GradingServicesImpl;
+import cakehat.services.GrdGenerator;
+import cakehat.services.GrdGeneratorImpl;
 import cakehat.services.PathServices;
 import cakehat.services.PathServicesImpl;
 import cakehat.services.UserServices;
@@ -109,6 +111,7 @@ public class Allocator
 
     private final SingletonAllocation<CourseInfo> _courseInfo;
     private final SingletonAllocation<GradingServices> _gradingServices;
+    private final SingletonAllocation<GrdGenerator> _grdGenerator;
     private final SingletonAllocation<UserServices> _userServices;
     private final SingletonAllocation<FileSystemServices> _fileSystemServices;
     private final SingletonAllocation<PathServices> _pathServices;
@@ -147,6 +150,16 @@ public class Allocator
         else
         {
             _gradingServices = customizer._gradingServices;
+        }
+        
+        if(customizer._grdGenerator == null)
+        {
+            _grdGenerator = new SingletonAllocation<GrdGenerator>()
+                               { public GrdGenerator allocate() { return new GrdGeneratorImpl(); } };
+        }
+        else
+        {
+            _grdGenerator = customizer._grdGenerator;
         }
 
         if(customizer._userServices == null)
@@ -294,6 +307,11 @@ public class Allocator
     {
         return getInstance()._gradingServices.getInstance();
     }
+    
+    public static GrdGenerator getGrdGenerator()
+    {
+        return getInstance()._grdGenerator.getInstance();
+    }
 
     public static UserServices getUserServices()
     {
@@ -370,6 +388,7 @@ public class Allocator
     {
         private SingletonAllocation<CourseInfo> _courseInfo;
         private SingletonAllocation<GradingServices> _gradingServices;
+        private SingletonAllocation<GrdGenerator> _grdGenerator;
         private SingletonAllocation<UserServices> _userServices;
         private SingletonAllocation<FileSystemServices> _fileSystemServices;
         private SingletonAllocation<PathServices> _pathServices;
@@ -394,6 +413,13 @@ public class Allocator
         public Customizer setGradingServices(SingletonAllocation<GradingServices> gradingServices)
         {
             _gradingServices = gradingServices;
+
+            return this;
+        }
+        
+        public Customizer setGrdGenerator(SingletonAllocation<GrdGenerator> grdGenerator)
+        {
+            _grdGenerator = grdGenerator;
 
             return this;
         }
