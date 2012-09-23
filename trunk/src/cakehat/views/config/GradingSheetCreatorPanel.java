@@ -6,7 +6,6 @@ import cakehat.database.DbGradingSheetSection;
 import cakehat.database.DbGradingSheetSubsection;
 import cakehat.database.DbPart;
 import cakehat.database.Orderable;
-import cakehat.logging.ErrorReporter;
 import cakehat.views.config.ValidationResult.ValidationState;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
@@ -30,15 +29,13 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import support.ui.FixedWidthJPanel;
 import support.ui.FormattedLabel;
+import support.ui.ModalJFrameHostHelper.CloseAction;
 import support.ui.PaddingPanel;
 import support.ui.PreferredHeightJPanel;
 
@@ -48,76 +45,42 @@ import support.ui.PreferredHeightJPanel;
  */
 class GradingSheetCreatorPanel extends JPanel
 {
-    private static final String WORKER_TAG = "GRADING_SHEET";
+    private final String WORKER_TAG = AssignmentPanel.WORKER_TAG;
     private final UniqueElementSingleThreadWorker _worker;
+    private final AssignmentPanel _asgnPanel;
     private final DbPart _part;
-    private final JPanel _contentPanel;
-    private final JPanel _headerPanel;
     
-    GradingSheetCreatorPanel(UniqueElementSingleThreadWorker worker, DbPart part)
+    private CloseAction _closeAction;
+    
+    GradingSheetCreatorPanel(AssignmentPanel asgnPanel, UniqueElementSingleThreadWorker worker, DbPart part)
     {
+        _asgnPanel = asgnPanel;
         _worker = worker;
         _part = part;
         
-        _contentPanel = new FixedWidthJPanel();
-        _contentPanel.setLayout(new BorderLayout(0, 0));
-        
+        //Layout
         this.setLayout(new BorderLayout(0, 0));
         
-        _headerPanel = new JPanel(new BorderLayout(0, 0));
+        JPanel headerPanel = new JPanel(new BorderLayout(0, 0));
+        headerPanel.add(FormattedLabel.asHeader(_part.getName() + " Grading Sheet"), BorderLayout.WEST);
+        headerPanel.add(Box.createHorizontalBox(), BorderLayout.CENTER);
         
-        this.add(new PaddingPanel(_headerPanel, 10, 10, 5, 5, _headerPanel.getBackground()), BorderLayout.NORTH);
+        this.add(new PaddingPanel(headerPanel, 10, 10, 5, 5, headerPanel.getBackground()), BorderLayout.NORTH);
         this.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
         this.add(Box.createHorizontalStrut(5), BorderLayout.EAST);
         this.add(Box.createHorizontalStrut(5), BorderLayout.WEST);
         
-        JScrollPane contentScrollPane = new JScrollPane(_contentPanel);
+        JPanel contentPanel = new FixedWidthJPanel();
+        contentPanel.setLayout(new BorderLayout(0, 0));
+        contentPanel.add(new GradingSheetPanel(headerPanel), BorderLayout.CENTER);
+        JScrollPane contentScrollPane = new JScrollPane(contentPanel);
         contentScrollPane.setBorder(null);
         this.add(contentScrollPane, BorderLayout.CENTER);
-        
-        //Load data
-        this.initialize();
     }
     
-    private void initialize()
+    void setCloseAction(CloseAction closeAction)
     {
-        _contentPanel.removeAll();
-        
-        JLabel loadingLabel = FormattedLabel.asHeader("Initializing...");
-        loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        _contentPanel.add(loadingLabel, BorderLayout.CENTER);
-        
-        JProgressBar loadingBar = new JProgressBar();
-        loadingBar.setIndeterminate(true);
-        _contentPanel.add(loadingBar, BorderLayout.SOUTH);
-        
-        _worker.submit(null, new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                _contentPanel.removeAll();
-                _headerPanel.removeAll();
-
-                _headerPanel.add(FormattedLabel.asHeader(_part.getName() + " Grading Sheet"), BorderLayout.WEST);
-                _headerPanel.add(Box.createHorizontalBox(), BorderLayout.CENTER);
-
-                EventQueue.invokeLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        _contentPanel.add(new GradingSheetPanel(), BorderLayout.CENTER);
-
-                        //Force visual update to reflect these changes
-                        _contentPanel.repaint();
-                        _contentPanel.revalidate();
-                        _headerPanel.repaint();
-                        _headerPanel.revalidate();
-                    }
-                });
-            }
-        });
+        _closeAction = closeAction;
     }
     
     private abstract class ReinitializeRunnable implements Runnable
@@ -130,12 +93,18 @@ class GradingSheetCreatorPanel extends JPanel
             }
             catch(SQLException e)
             {
-                //Cancel everything and re-initialize
-                _worker.cancel(WORKER_TAG);
-
-                initialize();
-
-                ErrorReporter.report(dbFailureMessage(), e);
+                if(_closeAction != null)
+                {
+                    EventQueue.invokeLater(new Runnable()
+                    {
+                        public void run()
+                        {
+                            _closeAction.close();
+                        }
+                    });
+                }
+                
+                _asgnPanel.reinitialize(e, dbFailureMessage());
             }
         }
         
@@ -148,7 +117,7 @@ class GradingSheetCreatorPanel extends JPanel
     {
         private final OrderableControllerHelper<DbGradingSheetSection> _helper;
         
-        GradingSheetPanel()
+        GradingSheetPanel(JPanel headerPanel)
         {   
             
             this.setLayout(new BorderLayout(0, 0));
@@ -184,7 +153,7 @@ class GradingSheetCreatorPanel extends JPanel
             this.add(_helper.getChildrenPanel(), BorderLayout.CENTER);
          
             //Add to the header panel the add section button
-            _headerPanel.add(_helper.getAddChildButton(), BorderLayout.EAST);
+            headerPanel.add(_helper.getAddChildButton(), BorderLayout.EAST);
         }
         
         @Override

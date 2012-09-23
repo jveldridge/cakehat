@@ -70,6 +70,7 @@ import support.ui.FixedWidthJPanel;
 import support.ui.FormattedLabel;
 import support.ui.GenericJComboBox;
 import support.ui.ModalDialog;
+import support.ui.ModalJFrameHostHelper.CloseAction;
 import support.ui.PaddingPanel;
 import support.ui.PartialDescriptionProvider;
 import support.ui.PeriodControl;
@@ -83,7 +84,7 @@ import support.ui.SelectionListener.SelectionAction;
  */
 class AssignmentPanel extends JPanel
 {
-    private static final String WORKER_TAG = "ASSIGNMENT";
+    static final String WORKER_TAG = "ASSIGNMENT";
     
     private final ConfigManagerView _configManager;
     private final UniqueElementSingleThreadWorker _worker;
@@ -373,7 +374,7 @@ class AssignmentPanel extends JPanel
         public abstract String dbFailureMessage();
     }
     
-    private void reinitialize(final Throwable t, final String msg)
+    void reinitialize(final Throwable t, final String msg)
     {
         //Cancel everything and re-initialize
         _worker.cancel(WORKER_TAG);
@@ -1788,7 +1789,10 @@ class AssignmentPanel extends JPanel
                     try
                     {
                         _worker.blockOnQueuedTasks();
-                        _configManager.hostModal(new GradingSheetCreatorPanel(_worker, _part));
+                        GradingSheetCreatorPanel gradingSheetCreator = 
+                                new GradingSheetCreatorPanel(AssignmentPanel.this, _worker, _part);
+                        CloseAction closeAction = _configManager.hostModal(gradingSheetCreator);
+                        gradingSheetCreator.setCloseAction(closeAction);
                     }
                     catch(InterruptedException e)
                     {
