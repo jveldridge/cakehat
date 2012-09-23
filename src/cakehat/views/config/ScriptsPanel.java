@@ -93,7 +93,7 @@ class ScriptsPanel extends JPanel
     {
         _contentPanel.add(FormattedLabel.asHeader(title));
         _contentPanel.add(Box.createVerticalStrut(3));
-        _contentPanel.add(FormattedLabel.asContent(message));
+        _contentPanel.add(FormattedLabel.asContent(message).usePlainFont());
         
         JButton scriptButton = new JButton("Create Script");
         scriptButton.addActionListener(new ActionListener()

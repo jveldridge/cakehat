@@ -38,6 +38,7 @@ import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import support.ui.FormattedLabel;
 import support.ui.PaddingPanel;
+import support.ui.PreferredHeightJPanel;
 /**
  *
  * @author jak2
@@ -155,7 +156,7 @@ class EmailPanel extends JPanel
         });
     }
     
-    private static class CredentialsPanel extends JPanel
+    private static class CredentialsPanel extends PreferredHeightJPanel
     {
         private final EmailPanel _emailPanel;
         private final ConfigManagerView _configManager;
@@ -186,7 +187,7 @@ class EmailPanel extends JPanel
                     "To send email, cakehat needs the email credentials of a Brown CS account. The password is not " +
                     "the Kerberos password used for login. We suggest you make use of your course's test account. " +
                     "To set or reset an account's LDAP password (which is the password used for Brown CS email), run " +
-                    "<tt>ldappasswd</tt> while signed into the account.");
+                    "<tt>ldappasswd</tt> while signed into the account.").usePlainFont();
             descriptionPanel.add(descriptionLabel, BorderLayout.SOUTH);
             this.add(descriptionPanel);
          
@@ -446,7 +447,7 @@ class EmailPanel extends JPanel
         }
     }
     
-    private static class NotificationsPanel extends JPanel
+    private static class NotificationsPanel extends PreferredHeightJPanel
     {
         NotificationsPanel(final EmailPanel emailPanel, final UniqueElementSingleThreadWorker worker,
                            List<DbNotifyAddress> notifyAddresses)
@@ -459,7 +460,7 @@ class EmailPanel extends JPanel
             descriptionPanel.add(Box.createVerticalStrut(5), BorderLayout.CENTER);
             JLabel descriptionLabel = FormattedLabel.asContent(
                     "When certain actions are taken in cakehat, such as TAs submitting grades, email will be sent " +
-                    "to the following email addresses:");
+                    "to the following email addresses:").usePlainFont();
             descriptionPanel.add(descriptionLabel, BorderLayout.SOUTH);
             this.add(descriptionPanel);
          
@@ -554,15 +555,6 @@ class EmailPanel extends JPanel
                 addressesPanel.add(emailField);
             }
             addressesPanel.add(Box.createHorizontalStrut(10));
-        }
-        
-        @Override
-        public Dimension getMaximumSize()
-        {
-            Dimension size = getPreferredSize();
-            size.width = Short.MAX_VALUE;
-            
-            return size;
         }
     }
 }

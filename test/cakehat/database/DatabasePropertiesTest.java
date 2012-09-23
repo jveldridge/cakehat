@@ -54,10 +54,10 @@ public class DatabasePropertiesTest {
     @Test
     public void testSetGetBooleanProperty() throws SQLException {
         boolean attach = true;
-        _database.putPropertyValue(DbPropertyValue.DbPropertyKey.ATTACH_GRADING_SHEET,
+        _database.putPropertyValue(DbPropertyValue.DbPropertyKey.ATTACH_DIGITAL_HANDIN,
                                    new DbPropertyValue<Boolean>(true));
         
-        DbPropertyValue<Boolean> property = _database.getPropertyValue(DbPropertyValue.DbPropertyKey.ATTACH_GRADING_SHEET);
+        DbPropertyValue<Boolean> property = _database.getPropertyValue(DbPropertyValue.DbPropertyKey.ATTACH_DIGITAL_HANDIN);
         assertEquals(attach, property.getValue());
     }
     

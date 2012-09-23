@@ -54,7 +54,8 @@ public class ConfigManagerView extends JFrame
         _tabbedPane.insertTab("Students", null, new PaddingPanel(new StudentPanel(this, _worker)), null, 1);
         _tabbedPane.insertTab("Assignments", null, new PaddingPanel(new AssignmentPanel(this, _worker)), null, 2);
         _tabbedPane.insertTab("Email", null, new PaddingPanel(new EmailPanel(this, _worker)), null, 3);
-        _tabbedPane.insertTab("Scripts", null, new PaddingPanel(new ScriptsPanel(this)), null, 4);
+        _tabbedPane.insertTab("Defaults", null, new PaddingPanel(new DefaultsPanel(_worker)), null, 4);
+        _tabbedPane.insertTab("Scripts", null, new PaddingPanel(new ScriptsPanel(this)), null, 5);
         
         _tabbedPane.setSelectedIndex(selectedIndex);
         
@@ -92,7 +93,7 @@ public class ConfigManagerView extends JFrame
                 
                 if(proceed)
                 {
-                    new ConfigManagerView(isCakehatConfigured ? 0 : 4).setVisible(true);
+                    new ConfigManagerView(isCakehatConfigured ? 0 : 5).setVisible(true);
                 }
             }
         });

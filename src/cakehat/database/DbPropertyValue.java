@@ -157,6 +157,6 @@ public class DbPropertyValue<T> extends DbDataItem
         
         public static final DbPropertyKey<String> EMAIL_ACCOUNT = new DbStringPropertyKey("email_account");
         public static final DbPropertyKey<String> EMAIL_PASSWORD = new DbStringPropertyKey("email_password");
-        public static final DbPropertyKey<Boolean> ATTACH_GRADING_SHEET = new DbBooleanPropertyKey("attach_grading_sheet");
+        public static final DbPropertyKey<Boolean> ATTACH_DIGITAL_HANDIN = new DbBooleanPropertyKey("attach_digital_handin");
     }
 }
