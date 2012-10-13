@@ -8,8 +8,10 @@ import java.util.Scanner;
  *
  * @author jak2
  */
-class ErrorDisplayCLI
+class DefaultThrowableCLI
 {
+    private DefaultThrowableCLI() { }
+    
     /**
      * Displays the error via system in and allows the user to interact via system out. This method is synchronized to
      * ensure that only one error is displayed to the user at the same time.
@@ -52,7 +54,7 @@ class ErrorDisplayCLI
                 String comments = scanner.nextLine();
 
                 System.out.println("Sending...");
-                ErrorReporter.emailErrorReport(message, error, comments);
+                DefaultThrowableReporter.emailErrorReport(message, error, comments);
                 System.out.println("Error report sent");
             }
 
@@ -68,8 +70,8 @@ class ErrorDisplayCLI
         }
         catch(Exception e)
         {
-            ErrorDisplayCLI.display("A message that is quite long because it is going to require wrapping due to its " +
-                    "long length and that is just a good test of what is occurring.", e);
+            DefaultThrowableCLI.display("A message that is quite long because it is going to require wrapping due to " +
+                    "its long length and that is just a good test of what is occurring.", e);
         }
     }
 }

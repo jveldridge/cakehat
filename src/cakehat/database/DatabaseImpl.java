@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.sqlite.SQLiteConfig;
+import support.utils.posix.FilePermission;
 
 /**
  *
@@ -79,7 +80,10 @@ public class DatabaseImpl implements Database
             {
                 Allocator.getFileSystemServices().makeDirectory(databaseFile.getParentFile());
                 databaseFile.createNewFile();
-                Allocator.getFileSystemServices().sanitize(databaseFile);
+                Allocator.getFileSystemUtilities().chmod(databaseFile, ImmutableSet.of(
+                    FilePermission.OWNER_READ, FilePermission.OWNER_WRITE,
+                    FilePermission.GROUP_READ, FilePermission.GROUP_WRITE));
+                Allocator.getFileSystemUtilities().changeGroup(databaseFile, Allocator.getCourseInfo().getTAGroup());
 
                 this.resetDatabase();
             }

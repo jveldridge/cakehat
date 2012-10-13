@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import support.resources.icons.IconLoader.IconImage;
 import support.ui.ModalDialog;
-import support.utils.FileDeletingException;
 
 /**
  *
@@ -329,16 +328,9 @@ public class Action implements Comparable<Action>
             {
                 if(groupTempDir.exists())
                 {
-                    Allocator.getFileSystemUtilities().deleteFiles(ImmutableSet.of(groupTempDir));
+                    Allocator.getFileSystemUtilities().deleteFilesSilently(ImmutableSet.of(groupTempDir));
                 }
                 Allocator.getFileSystemServices().makeDirectory(groupTempDir);
-            }
-            catch(FileDeletingException e)
-            {
-                throw new TaskException("Unable to delete action temp dir\n" +
-                        "Action: " + this.getDebugName() + "\n" +
-                        "Group: " + group + "\n" +
-                        "Directory: " + groupTempDir, e);
             }
             catch(ServicesException e)
             {

@@ -2,7 +2,6 @@ package support.utils;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.util.Collection;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -15,7 +14,7 @@ import static org.easymock.EasyMock.*;
 public class FileSystemUtilitiesTest
 {
     @Test
-    public void testGetAllFiles_AcceptAll() throws IOException
+    public void testGetAllFiles_AcceptAll() throws FilePermissionException
     {
         File subFile1 = createMock(File.class);
         expect(subFile1.isDirectory()).andReturn(false);

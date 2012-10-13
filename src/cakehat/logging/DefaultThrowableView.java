@@ -24,7 +24,7 @@ import support.ui.PaddingPanel;
  *
  * @author jak2
  */
-class ErrorDisplayView extends JDialog
+class DefaultThrowableView extends JDialog
 {
     /**
      * Displays the {@code message} and stack trace of {@code error}.
@@ -37,7 +37,7 @@ class ErrorDisplayView extends JDialog
         //If on the UI thread show the view immediately
         if(EventQueue.isDispatchThread())
         {
-            new ErrorDisplayView(message, error);
+            new DefaultThrowableView(message, error);
         }
         //Otherwise show the view on the UI thread when next possible
         else
@@ -47,13 +47,13 @@ class ErrorDisplayView extends JDialog
                 @Override
                 public void run()
                 {
-                    new ErrorDisplayView(message, error);
+                    new DefaultThrowableView(message, error);
                 }
             });
         }
     }
 
-    private ErrorDisplayView(String message, Throwable error)
+    private DefaultThrowableView(String message, Throwable error)
     {
         super(null, "[cakehat] Error Encountered", ModalityType.APPLICATION_MODAL);
 
@@ -118,7 +118,7 @@ class ErrorDisplayView extends JDialog
             panel.add(FormattedLabel.asHeader("Stack Trace"));
             panel.add(Box.createVerticalStrut(5));
 
-            JTextArea errorTextArea = new JTextArea(ErrorReporter.getStackTraceAsString(error));
+            JTextArea errorTextArea = new JTextArea(DefaultThrowableReporter.getStackTraceAsString(error));
             errorTextArea.setFont(new Font("Monospaced", Font.PLAIN, errorTextArea.getFont().getSize()));
             errorTextArea.setTabSize(4);
             errorTextArea.setCaretPosition(0);
@@ -170,29 +170,28 @@ class ErrorDisplayView extends JDialog
                 sendButton.setEnabled(false);
                 sendButton.setText("Sending...");
                 
-                //Email the error report on the UI thread on the next loop through, this will allow the button to be
-                //visually updated
+                //Email on the UI thread on the next loop through, this will allow the button to be visually updated
                 EventQueue.invokeLater(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        ErrorReporter.emailErrorReport(message, error, commentsTextArea.getText());
-                        ErrorDisplayView.this.dispose();
+                        DefaultThrowableReporter.emailErrorReport(message, error, commentsTextArea.getText());
+                        DefaultThrowableView.this.dispose();
                     }
                 });
             }
         });
 
-        //Cancel
-        JButton cancelButton = new JButton("Cancel");
-        buttonPanel.add(cancelButton);
-        cancelButton.addActionListener(new ActionListener()
+        //Close
+        JButton closeButton = new JButton("Close");
+        buttonPanel.add(closeButton);
+        closeButton.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent ae)
             {
-                ErrorDisplayView.this.dispose();
+                DefaultThrowableView.this.dispose();
             }
         });
     }
@@ -208,8 +207,8 @@ class ErrorDisplayView extends JDialog
         }
         catch(Exception e)
         {
-            ErrorDisplayView.display("A message that is quite long because it is going to require wrapping due to " +
-                    "its long length and that is just a good test of what is occurring.", e);
+            DefaultThrowableView.display("A message that is quite long because it is going to require wrapping due " +
+                    "to its long length and that is just a good test of what is occurring.", e);
         }
     }
 }

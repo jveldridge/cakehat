@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import support.utils.FileCopyingException;
-import support.utils.FileDeletingException;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
 
@@ -17,22 +16,6 @@ import support.utils.FileSystemUtilities.OverwriteMode;
 public class FileSystemServicesImpl implements FileSystemServices
 {
     @Override
-    public void sanitize(File file) throws ServicesException
-    {
-        try
-        {
-            //Permissions
-            Allocator.getFileSystemUtilities().chmodDefault(file, true);
-
-            //Group owner
-            Allocator.getFileSystemUtilities().changeGroup(file, Allocator.getCourseInfo().getTAGroup(), true);
-        }
-        catch(IOException e)
-        {
-            throw new ServicesException("Unable to set group or permissions: " + file.getAbsolutePath(), e);
-        }
-    }
-
     public Set<File> makeDirectory(File dir) throws ServicesException
     {
         try
@@ -45,6 +28,7 @@ public class FileSystemServicesImpl implements FileSystemServices
         }
     }
 
+    @Override
     public Set<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate,
             FileCopyPermissions copyPermissions) throws FileCopyingException
     {
@@ -60,13 +44,7 @@ public class FileSystemServicesImpl implements FileSystemServices
         //If the temporary directory already exists, attempt to delete it
         if(tempDir.exists())
         {
-            try
-            {
-                Allocator.getFileSystemUtilities().deleteFiles(ImmutableSet.of(tempDir));
-            }
-            //Do not do anything if this fails, because it will almost certainly be due to NFS (networked file system)
-            //issues about which nothing can be done
-            catch(FileDeletingException e) { }
+            Allocator.getFileSystemUtilities().deleteFilesSilently(ImmutableSet.of(tempDir));
         }
 
         //Create the temporary directory

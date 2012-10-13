@@ -15,17 +15,6 @@ import support.utils.FileSystemUtilities.OverwriteMode;
 public interface FileSystemServices
 {
     /**
-     * Sets the correct permissions and group owner of {@code file}.
-     * <br/><br/>
-     * If {@code file} is a directory this will be applied recursively for all files and directories inside of the
-     * directory.
-     *
-     * @param file
-     * @throws ServicesException
-     */
-    public void sanitize(File file) throws ServicesException;
-
-    /**
      * If the directory already exists no action is taken. If the directory does not exist it is created, the
      * permissions are set appropriately and the TA group is set as the group owner. Any directories above the directory
      * to be created that do not exist are also created in the same manner.
