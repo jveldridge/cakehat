@@ -124,6 +124,15 @@ public interface FileSystemUtilities
      * @throws FileDeletingException if unable to delete one or more files
      */
     public void deleteFiles(Iterable<File> files) throws FileDeletingException;
+    
+    /**
+     * Deletes the {@code files}. Attempts to delete all files, and will continue even if unable to delete one or more
+     * files. Failures are handled silently. Failures can occur in cases where due to NFS (network file system)
+     * temp files can be created during the deletion process and these temp files cannot be deleted.
+     * 
+     * @param files 
+     */
+    public void deleteFilesSilently(Iterable<File> files);
 
     /**
      * Creates a directory, recursively creating parent directories as necessary. This is similar to
@@ -152,32 +161,13 @@ public interface FileSystemUtilities
     /**
      * Changes the permissions on a file or directory. The user <b>must</b> be the owner of the files and/or
      * directories, if the user is not, the native call will fail and a {@link IOException} will be thrown.
-     * <br/><br/>
-     * If changing the permissions on a directory and {@code recursive} is {@code true} then the permissions of the
-     * files and directories within the directory provided will also have their permissions changed.
      *
      * @param file
-     * @param recursive
      * @param mode
      *
      * @throws IOException
      */
-    public void chmod(File file, boolean recursive, Set<FilePermission> mode) throws IOException;
-
-    /**
-     * Changes permissions of a file to be readable and writable by the owner and group. Changes the permissions of a
-     * directory to be readable, writable, and accessible by the owner and group. All files are made readable and
-     * writable by the owner and group. The user <b>must</b> be the owner of the files and/or directories, if the user
-     * is not, the native call will fail and an {@link IOException} will be thrown.
-     * <br/><br/>
-     * If {@code recursive} is {@code true}, then all subdirectories and files are given the same permissions.
-     *
-     * @param file
-     * @param recursive
-     *
-     * @throws IOException
-     */
-    public void chmodDefault(File file, boolean recursive) throws IOException;
+    public void chmod(File file, Set<FilePermission> mode) throws IOException;
 
     /**
      * Changes the specified file or directory's group. The user calling this method must own the file or directory in
@@ -186,11 +176,10 @@ public interface FileSystemUtilities
      *
      * @param file
      * @param group the name of the group, such as cs000ta
-     * @param recursive
      *
      * @throws NativeException
      */
-    public void changeGroup(File file, String group, boolean recursive) throws IOException;
+    public void changeGroup(File file, String group) throws IOException;
 
     /**
      * Returns all files that satisfy the filter. If {@code file} is a directory, the directory will be recursively
@@ -199,9 +188,9 @@ public interface FileSystemUtilities
      * @param file
      * @param filter
      * @return
-     * @throws IOException
+     * @throws FileAccessException
      */
-    public Set<File> getFiles(File file, FileFilter filter) throws IOException;
+    public Set<File> getFiles(File file, FileFilter filter) throws FilePermissionException;
 
     /**
      * Returns all files that satisfy the filter. If the file is a directory the directory will be recursively searched
@@ -211,7 +200,7 @@ public interface FileSystemUtilities
      * @param filter
      * @param comparator
      * @return
-     * @throws IOException
+     * @throws FileAccessException
      */
-    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws IOException;
+    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws FilePermissionException;
 }

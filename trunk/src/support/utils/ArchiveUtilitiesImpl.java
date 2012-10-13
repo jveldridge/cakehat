@@ -96,7 +96,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
                         out.close();
                         
                         //Set permissions
-                        _fileSystemUtils.changeGroup(file, groupOwner, false);
+                        _fileSystemUtils.changeGroup(file, groupOwner);
                         Set<FilePermission> permissions = new HashSet<FilePermission>();
                         permissions.add(FilePermission.OWNER_READ);
                         permissions.add(FilePermission.OWNER_WRITE);
@@ -107,7 +107,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
                             permissions.add(FilePermission.OWNER_EXECUTE);
                             permissions.add(FilePermission.GROUP_EXECUTE);
                         }
-                        _fileSystemUtils.chmod(file, false, permissions);
+                        _fileSystemUtils.chmod(file, permissions);
                     }
                 }
             }

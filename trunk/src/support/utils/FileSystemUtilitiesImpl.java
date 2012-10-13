@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -238,7 +239,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         //Set the specified group owner
         try
         {
-            this.changeGroup(dstFile, groupOwner, false);
+            this.changeGroup(dstFile, groupOwner);
         }
         catch(IOException e)
         {
@@ -267,7 +268,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
 
         try
         {
-            this.chmod(dstFile, false, permissions);
+            this.chmod(dstFile, permissions);
         }
         catch(IOException e)
         {
@@ -344,8 +345,20 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
         }
 
+        //Retrieve contents of the source directory
+        File[] srcEntries;
+        try
+        {
+            srcEntries = listFiles(srcDir);
+        }
+        catch(FilePermissionException e)
+        {
+            throw this.cleanupFailedCopy(srcDir, dstDir, created.build(), false,
+                    "Unable to list contents of source directory", e);
+        }
+        
         //Copy files and directories inside of this directory
-        for(File entry : srcDir.listFiles())
+        for(File entry : srcEntries)
         {
             //Build destination path
             String relativePath = entry.getAbsolutePath().replace(srcDir.getAbsolutePath(), "");
@@ -425,6 +438,12 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         {
             throw new FileDeletingException(failedToDelete);
         }
+    }
+    
+    @Override
+    public void deleteFilesSilently(Iterable<File> files)
+    {
+        deleteFilesHelper(files);
     }
 
     /**
@@ -526,39 +545,9 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     /******************************************************************************************************************\
     |*                                               Permissions                                                       |  
     \******************************************************************************************************************/
-
-    @Override
-    public void chmodDefault(File file, boolean recursive) throws IOException
-    {
-        if(file.isDirectory())
-        {
-            this.chmod(file, false, READ_WRITE_EXECUTE_SETGID_PERMISSIONS);
-            
-            if(recursive)
-            {
-                for(File entry : this.listFiles(file))
-                {
-                    this.chmodDefault(entry, recursive);
-                }
-            }
-        }
-        else
-        {
-            this.chmod(file, false, READ_WRITE_PERMISSIONS);
-        }
-    }
     
-    /**
-     * Changes the permissions of a file. The user <strong>must</strong> be the owner of the file or else an
-     * {@link IOException} will be thrown.
-     *
-     * @param file
-     * @param recursive
-     * @param permissions the permission mode, a set of {@link FilePermission}
-     * @throws IOException
-     */
     @Override
-    public void chmod(File file, boolean recursive, Set<FilePermission> permissions) throws IOException
+    public void chmod(File file, Set<FilePermission> permissions) throws IOException
     {
         int permissionsValue = 0;
         for(FilePermission permission : permissions)
@@ -576,18 +565,10 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                     "File: " + file.getAbsolutePath() + "\n" +
                     "Permissions: " + permissions, ex);
         }
-
-        if(recursive && file.isDirectory())
-        {
-            for(File entry : this.listFiles(file))
-            {
-                this.chmod(entry, recursive, permissions);
-            }
-        }
     }
     
     @Override
-    public void changeGroup(File file, String group, boolean recursive) throws IOException
+    public void changeGroup(File file, String group) throws IOException
     {
         try
         {
@@ -599,14 +580,6 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                     "File: " + file.getAbsolutePath() + "\n" +
                     "Group Owner: "  + group, ex);
         }
-
-        if(file.isDirectory() && recursive)
-        {
-            for(File entry : this.listFiles(file))
-            {
-                this.changeGroup(entry, group, recursive);
-            }
-        }
     }
             
     /******************************************************************************************************************\
@@ -614,35 +587,72 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     \******************************************************************************************************************/
 
     @Override
-    public Set<File> getFiles(File file, FileFilter filter) throws IOException
+    public Set<File> getFiles(File file, FileFilter filter) throws FilePermissionException
     {
-        ImmutableSet.Builder<File> acceptedFiles = ImmutableSet.builder();
-
-        if(filter.accept(file))
+        GetFilesResult result = getFilesExhaustive(file, filter);
+        if(!result.unexplorableDirs.isEmpty())
         {
-            acceptedFiles.add(file);
+            throw new FilePermissionException(result.unexplorableDirs, "One or more directories were " +
+                    "encountered whose contents could not be accessed");
         }
-
-        if(file.isDirectory())
-        {
-            for(File entry : this.listFiles(file))
-            {
-                acceptedFiles.addAll(this.getFiles(entry, filter));
-            }
-        }
-
-        return acceptedFiles.build();
+        
+        return ImmutableSet.copyOf(result.acceptedFiles);
     }
 
     @Override
-    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws IOException
+    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws FilePermissionException
     {
         List<File> files = new ArrayList<File>(this.getFiles(file, filter));
         Collections.sort(files, comparator);
 
         return ImmutableList.copyOf(files);
     }
-            
+     
+    private static class GetFilesResult
+    {
+        private final Set<File> acceptedFiles = new HashSet<File>();
+        private final Set<File> unexplorableDirs = new HashSet<File>();
+    }
+    
+    /**
+     * Recursively searches for all files that are accepted by the {@code filter}. If {@code file} is a directory then
+     * its contents will be searched. If a directory's contents cannot be searched then it is added to
+     * {@link GetFilesResult#unexplorableDirs} and the search continues.
+     * 
+     * @param file
+     * @param filter
+     * @return 
+     */
+    private GetFilesResult getFilesExhaustive(File file, FileFilter filter)
+    {
+        GetFilesResult result = new GetFilesResult();
+        
+        if(filter.accept(file))
+        {
+            result.acceptedFiles.add(file);
+        }
+        
+        if(file.isDirectory())
+        {
+            File[] entries = file.listFiles();
+            if(entries == null)
+            {
+                result.unexplorableDirs.add(file);
+            }
+            else
+            {
+                for(File entry : entries)
+                {
+                    GetFilesResult entryResult = this.getFilesExhaustive(entry, filter);
+                    result.acceptedFiles.addAll(entryResult.acceptedFiles);
+                    result.unexplorableDirs.addAll(entryResult.unexplorableDirs);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
     /******************************************************************************************************************\
     |*                                                   Misc                                                          |  
     \******************************************************************************************************************/
@@ -666,8 +676,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             
                 dirsCreated.add(dir);
 
-                this.chmod(dir, false, READ_WRITE_EXECUTE_SETGID_PERMISSIONS);
-                this.changeGroup(dir, groupOwner, false);
+                this.chmod(dir, READ_WRITE_EXECUTE_SETGID_PERMISSIONS);
+                this.changeGroup(dir, groupOwner);
             }
             catch(IOException cause)
             {
@@ -719,16 +729,14 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
      * 
      * @param file
      * @return
-     * @throws IOException 
+     * @throws FileAccessException 
      */
-    private File[] listFiles(File file) throws IOException
+    private File[] listFiles(File file) throws FilePermissionException
     {
         File[] entries = file.listFiles();
         if(entries == null)
         {
-            throw new IOException("Unable to retrieve contents of directory. This is likely due to a permissions " +
-                    "issue or an IO error\n" +
-                    "Directory: " + file.getAbsolutePath());
+            throw new FilePermissionException(ImmutableSet.of(file), "Unable to list contents of directory");
         }
         
         return entries;

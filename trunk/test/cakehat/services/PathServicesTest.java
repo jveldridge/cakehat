@@ -107,6 +107,14 @@ public class PathServicesTest
     }
     
     @Test
+    public void testGetCakehatDir()
+    {
+        File expected = new File("/course/" + COURSE + "/.cakehat/");
+        
+        assertEquals(expected, _service.getCakehatDir());
+    }
+    
+    @Test
     public void testGetDatabaseFile()
     {
         File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/database/database.db");

@@ -41,6 +41,20 @@ public interface PathServices
      */
     public File getTABinDir();
     
+    
+    /**
+     * The cakehat directory.
+     *
+     * <pre>
+     * {@code
+     * /course/<course>/.cakehat/
+     * }
+     * </pre>
+     *
+     * @return
+     */
+    public File getCakehatDir();
+    
     /**
      * The database file.
      *

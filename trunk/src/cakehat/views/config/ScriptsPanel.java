@@ -173,11 +173,10 @@ class ScriptsPanel extends JPanel
                     TerminalOption.COURSE.getShortOption() + " " + CakehatSession.getCourse() + " \"$@\"");
             writer.close();
 
-            Allocator.getFileSystemUtilities().chmod(scriptFile, false,
+            Allocator.getFileSystemUtilities().chmod(scriptFile,
                     ImmutableSet.of(FilePermission.OWNER_READ, FilePermission.OWNER_EXECUTE,
                         FilePermission.GROUP_READ, FilePermission.GROUP_EXECUTE));
-            Allocator.getFileSystemUtilities().changeGroup(scriptFile, Allocator.getCourseInfo().getTAGroup(),
-                    false);
+            Allocator.getFileSystemUtilities().changeGroup(scriptFile, Allocator.getCourseInfo().getTAGroup());
         }
         catch(ServicesException ex)
         {
@@ -226,11 +225,10 @@ class ScriptsPanel extends JPanel
                     + " " + TerminalOption.ENTER_GRADE_ARGS.getShortOption()+ " \"$@\"");
             writer.close();
 
-            Allocator.getFileSystemUtilities().chmod(scriptFile, false,
+            Allocator.getFileSystemUtilities().chmod(scriptFile,
                     ImmutableSet.of(FilePermission.OWNER_READ, FilePermission.OWNER_EXECUTE,
                         FilePermission.GROUP_READ, FilePermission.GROUP_EXECUTE));
-            Allocator.getFileSystemUtilities().changeGroup(scriptFile, Allocator.getCourseInfo().getTAGroup(),
-                    false);
+            Allocator.getFileSystemUtilities().changeGroup(scriptFile, Allocator.getCourseInfo().getTAGroup());
         }
         catch(ServicesException ex)
         {

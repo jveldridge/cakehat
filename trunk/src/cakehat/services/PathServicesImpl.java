@@ -27,10 +27,15 @@ public class PathServicesImpl implements PathServices
         return new File(getCourseDir(), "tabin");
     }
     
+    @Override
+    public File getCakehatDir()
+    {
+        return new File(getCourseDir(), ".cakehat");
+    }
+    
     private File getCakehatCurrentYearDir()
     {
-        return new File(new File(getCourseDir(), ".cakehat"),
-                Integer.toString(new DateTime().getYear()));
+        return new File(getCakehatDir(), Integer.toString(new DateTime().getYear()));
     }
 
     @Override
