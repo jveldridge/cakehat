@@ -66,34 +66,27 @@ public class DeadlineInfo
      * passed since {@code onTimeDate} such that an amount less than {@code latePeriod} is 1 increment.
      * 
      * @param onTimeDate may not be {@code null}
+     * @param latePeriod may not be {@code null}
+     * @param latePoints may not be {@code null}
      * @param lateDate may be {@code null}
-     * @param latePoints may not be {@code null} if {@code latePeriod} is not {@code null}
-     * @param latePeriod may not be {@code null} if {@code latePoints} is not {@code null}
      * @return 
      */
     static DeadlineInfo newVariableDeadlineInfo(DateTime onTimeDate,
-            DateTime lateDate, Double latePoints, Period latePeriod)
+            Period latePeriod, Double latePoints,
+            DateTime lateDate)
     {
         //Perform validation
         if(onTimeDate == null)
         {
             throw new NullPointerException("onTimeDate may not be null");
         }
-        if(latePoints != null && latePeriod == null)
-        {   
-            throw new NullPointerException("latePeriod may not be null when latePoints is specified");
-        }
-        if(latePeriod != null && latePoints == null)
+        if(latePeriod == null)
         {
-            throw new NullPointerException("latePoints may not be null when latePeriod is specified");
+            throw new NullPointerException("latePeriod may not be null");
         }
-        if(lateDate != null && latePoints == null)
+        if(latePoints == null)
         {
-            throw new NullPointerException("latePoints may not be null when lateDate is specified");
-        }
-        if(lateDate != null && latePeriod == null)
-        {
-            throw new NullPointerException("latePeriod may not be null when lateDate is specified");
+            throw new NullPointerException("latePoints may not be null");
         }
         
         return new DeadlineInfo(Type.VARIABLE, null, null, onTimeDate, lateDate, latePoints, latePeriod);
@@ -307,11 +300,6 @@ public class DeadlineInfo
         if(occurrenceDate.isBefore(onTimeDate) || occurrenceDate.equals(onTimeDate))
         {
             effect = new DeadlineResolution(TimeStatus.ON_TIME, 0);
-        }
-        //If no late penalty exists, then after the on time date occurence dates are NC Late
-        else if(_latePeriod == null && occurrenceDate.isAfter(onTimeDate))
-        {
-            effect = new DeadlineResolution(TimeStatus.NC_LATE, Double.NaN);
         }
         //If there is a date after which ocurrence dates become NC Late
         else if(lateDate != null && occurrenceDate.isAfter(lateDate))

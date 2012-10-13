@@ -68,7 +68,8 @@ public class DeadlineInfoTest
     |*                                      Fixed Deadlines - No Extension                                            *|
     \******************************************************************************************************************/
     
-    //Ontime specified
+    //Specified:     On time date
+    //Not specified: Early date, early bonus, late date, late penalty
     
     @Test
     public void testFixedDeadline_OntimeSpecified_BeforeOntimeHandin_NoExtension()
@@ -100,7 +101,8 @@ public class DeadlineInfoTest
         assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Early, Ontime specified
+    //Specified:     Early date, early bonus, on time date
+    //Not specified: Late date, late penalty
     
     @Test
     public void testFixedDeadline_EarlyOntimeSpecified_BeforeEarlyHandin_NoExtension()
@@ -152,7 +154,8 @@ public class DeadlineInfoTest
         assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Ontime, Late specified
+    //Specified:     On time date, late date, late penalty
+    //Not specified: Early date, early penalty
     
     @Test
     public void testFixedDeadline_OntimeLateSpecified_BeforeOntimeHandin_NoExtension()
@@ -204,7 +207,8 @@ public class DeadlineInfoTest
         assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Early, Ontime, & Late specified
+    //Specified:     Early date, early bonus, on time date, late date, late penalty
+    //Not specified: none
     
     @Test
     public void testFixedDeadline_EarlyOntimeLateSpecified_BeforeEarlyHandin_NoExtension()
@@ -280,7 +284,8 @@ public class DeadlineInfoTest
     |*                                    Fixed Deadlines - Extension, No Shift                                       *|
     \******************************************************************************************************************/
     
-    //Ontime specified
+    //Specified:     On time date
+    //Not specified: Early date, early bonus, late date, late penalty
     
     @Test
     public void testFixedDeadline_OntimeSpecified_BeforeExtensionHandin_Extension_NoShift()
@@ -312,8 +317,8 @@ public class DeadlineInfoTest
         assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    
-    //Early & Ontime specified
+    //Specified:     Early date, early bonus, on time date
+    //Not specified: Late date, late penalty
     
     @Test
     public void testFixedDeadline_EarlyOntimeSpecified_BeforeExtensionHandin_Extension_NoShift()
@@ -345,7 +350,8 @@ public class DeadlineInfoTest
         assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Early, Ontime, & Late specified
+    //Specified:     On time date, late date, late penalty
+    //Not specified: Early date, early penalty
     
     @Test
     public void testFixedDeadline_OntimeLateSpecified_BeforeExtensionHandin_Extension_NoShift()
@@ -377,7 +383,8 @@ public class DeadlineInfoTest
         assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Early, Ontime, & Late specified
+    //Specified:     Early date, early bonus, on time date, late date, late penalty
+    //Not specified: none
     
     @Test
     public void testFixedDeadline_EarlyOntimeLateSpecified_BeforeExtensionHandin_Extension_NoShift()
@@ -413,7 +420,8 @@ public class DeadlineInfoTest
     |*                                      Fixed Deadlines - Extension, Shift                                        *|
     \******************************************************************************************************************/
     
-    //Ontime specified
+    //Specified:     On time date
+    //Not specified: Early date, early bonus, late date, late penalty
     
     @Test
     public void testFixedDeadline_OntimeSpecified_BeforeOntimeExtensionHandin_Extension_Shift()
@@ -445,7 +453,8 @@ public class DeadlineInfoTest
         assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Early, Ontime specified
+    //Specified:     Early date, early bonus, on time date
+    //Not specified: Late date, late penalty
     
     @Test
     public void testFixedDeadline_EarlyOntimeSpecified_BeforeEarlyExtensionHandin_Extension_Shift()
@@ -497,7 +506,8 @@ public class DeadlineInfoTest
         assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Ontime, Late specified
+    //Specified:     On time date, late date, late penalty
+    //Not specified: Early date, early bonus
     
     @Test
     public void testFixedDeadline_OntimeLateSpecified_BeforeOntimeExtensionHandin_Extension_Shift()
@@ -549,7 +559,8 @@ public class DeadlineInfoTest
         assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Early, Ontime, & Late specified
+    //Specified:     Early date, early bonus, on time date, late date, late penalty
+    //Not specified: none
     
     @Test
     public void testFixedDeadline_EarlyOntimeLateSpecified_BeforeEarlyExtensionHandin_Extension_Shift()
@@ -625,44 +636,13 @@ public class DeadlineInfoTest
     |*                                   Variable Deadlines - No Extension                                            *|
     \******************************************************************************************************************/
     
-    //Ontime specified
-    
-    @Test
-    public void testVariableDeadline_OntimeSpecified_BeforeOntimeHandin_NoExtension()
-    {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, null, null);
-        
-        DeadlineResolution resolution = info.apply(ON_TIME_DATE.minusHours(1), null, null);
-        assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
-        assertEquals(0D, resolution.getPenaltyOrBonus(EARNED), 0D);
-    }
-    
-    @Test
-    public void testVariableDeadline_OntimeSpecified_OnOntimeHandin_NoExtension()
-    {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, null, null);
-        
-        DeadlineResolution resolution = info.apply(ON_TIME_DATE, null, null);
-        assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
-        assertEquals(0D, resolution.getPenaltyOrBonus(EARNED), 0D);
-    }
-    
-    @Test
-    public void testVariableDeadline_OntimeSpecified_AfterOntimeHandin_NoExtension()
-    {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, null, null);
-        
-        DeadlineResolution resolution = info.apply(ON_TIME_DATE.plusHours(1), null, null);
-        assertEquals(TimeStatus.NC_LATE, resolution.getTimeStatus());
-        assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
-    }
-    
-    //Ontime specified, Late specified - late date not specified
+    //Specified:     On time date, late period, late penalty
+    //Not specified: Late date
     
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_BeforeOntimeHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.minusHours(1), null, null);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -672,7 +652,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_OnOntimeHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE, null, null);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -682,7 +662,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterOntimeLessThan1PeriodHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plusHours(1), null, null);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -692,7 +672,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterOntimeExactly1PeriodHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(LATE_PERIOD), null, null);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -702,7 +682,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterOntimeBetween1And2PeriodsHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(LATE_PERIOD).plusHours(1), null, null);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -712,19 +692,20 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterOntimeExactly2PeriodsHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(LATE_PERIOD).plus(LATE_PERIOD), null, null);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
         assertEquals(2*LATE_PENALTY, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Ontime specified, Late specified - late date specified
+    //Specified:     On time date, late period, late penalty, late date
+    //Not specified: none
     
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_BeforeOntimeHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.minusHours(1), null, null);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -734,7 +715,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_OnOntimeHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE, null, null);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -744,7 +725,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterOntimeLessThan1PeriodHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plusHours(1), null, null);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -754,7 +735,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterOntimeExactly1PeriodHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(LATE_PERIOD), null, null);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -764,7 +745,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterOntimeBetween1And2PeriodsHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(LATE_PERIOD).plusHours(1), null, null);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -774,7 +755,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterOntimeExactly2PeriodsHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(LATE_PERIOD).plus(LATE_PERIOD), null, null);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -784,7 +765,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_OnLateHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(LATE_DATE, null, null);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -793,7 +774,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterLateHandin_NoExtension()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(LATE_DATE.plusHours(1), null, null);
         assertEquals(TimeStatus.NC_LATE, resolution.getTimeStatus());
@@ -804,45 +785,13 @@ public class DeadlineInfoTest
     |*                                Variable Deadlines - Extension, No Shift                                        *|
     \******************************************************************************************************************/
         
-    //Ontime specified
-    
-    @Test
-    public void testVariableDeadline_OntimeSpecified_BeforeExtensionHandin_Extension_NoShift()
-    {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, null, null);
-        
-        DeadlineResolution resolution = info.apply(EXTENSION_DATE.minusHours(1), EXTENSION_DATE, false);
-        assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
-        assertEquals(0D, resolution.getPenaltyOrBonus(EARNED), 0D);
-    }
-    
-    @Test
-    public void testVariableDeadline_OntimeSpecified_OnExtensionHandin_Extension_NoShift()
-    {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, null, null);
-        
-        DeadlineResolution resolution = info.apply(EXTENSION_DATE, EXTENSION_DATE, false);
-        assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
-        assertEquals(0D, resolution.getPenaltyOrBonus(EARNED), 0D);
-    }
-    
-    @Test
-    public void testVariableDeadline_OntimeSpecified_AfterExtensionHandin_Extension_NoShift()
-    {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, null, null);
-        
-        DeadlineResolution resolution = info.apply(EXTENSION_DATE.plusHours(1), EXTENSION_DATE, false);
-        assertEquals(TimeStatus.NC_LATE, resolution.getTimeStatus());
-        assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
-    }
-    
-    
-    //Ontime specified, Late specified - late date not specified
+    //Specified:     On time date, late period, late penalty
+    //Not specified: Late date
     
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_BeforeExtensionHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.minusHours(1), EXTENSION_DATE, false);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -852,7 +801,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_OnExtensionHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE, EXTENSION_DATE, false);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -862,7 +811,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterExtensionLessThan1PeriodHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.plusHours(1), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -872,7 +821,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterExtensionExactly1PeriodHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.plus(LATE_PERIOD), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -882,7 +831,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterExtensionBetween1And2PeriodsHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.plus(LATE_PERIOD).plusHours(1), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -892,20 +841,20 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterExtensionExactly2PeriodsHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.plus(LATE_PERIOD).plus(LATE_PERIOD), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
         assertEquals(2*LATE_PENALTY, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    
-    //Ontime specified, Late specified - late date specified
+    //Specified:     On time date, late period, late penalty, late date
+    //Not specified: none
     
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_BeforeExtensionHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.minusHours(1), EXTENSION_DATE, false);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -915,7 +864,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_OnExtensionHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE, EXTENSION_DATE, false);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -925,7 +874,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterExtensionLessThan1PeriodHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.plusHours(1), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -935,7 +884,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterExtensionExactly1PeriodHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.plus(LATE_PERIOD), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -945,7 +894,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterExtensionBetween1And2PeriodsHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.plus(LATE_PERIOD).plusHours(1), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -955,7 +904,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterExtensionExactly2PeriodsHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(EXTENSION_DATE.plus(LATE_PERIOD).plus(LATE_PERIOD), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -967,7 +916,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_OnLateExtensionHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(LATE_DATE.plus(EXTENSION_SHIFT), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -978,7 +927,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterLateExtensionHandin_Extension_NoShift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(LATE_DATE.plus(EXTENSION_SHIFT).plusHours(1), EXTENSION_DATE, false);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -987,45 +936,14 @@ public class DeadlineInfoTest
     /******************************************************************************************************************\
     |*                                  Variable Deadlines - Extension, Shift                                         *|
     \******************************************************************************************************************/
-        
-    //Ontime specified
     
-    @Test
-    public void testVariableDeadline_OntimeSpecified_BeforeOntimeExtensionHandin_Extension_Shift()
-    {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, null, null);
-        
-        DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).minusHours(1), EXTENSION_DATE, true);
-        assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
-        assertEquals(0D, resolution.getPenaltyOrBonus(EARNED), 0D);
-    }
-    
-    @Test
-    public void testVariableDeadline_OntimeSpecified_OnOntimeExtensionHandin_Extension_Shift()
-    {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, null, null);
-        
-        DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT), EXTENSION_DATE, true);
-        assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
-        assertEquals(0D, resolution.getPenaltyOrBonus(EARNED), 0D);
-    }
-    
-    @Test
-    public void testVariableDeadline_OntimeSpecified_AfterOntimeExtensionHandin_Extension_Shift()
-    {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, null, null);
-        
-        DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).plusHours(1), EXTENSION_DATE, true);
-        assertEquals(TimeStatus.NC_LATE, resolution.getTimeStatus());
-        assertEquals(-EARNED, resolution.getPenaltyOrBonus(EARNED), 0D);
-    }
-    
-    //Ontime specified, Late specified - late date not specified
+    //Specified:     On time date, late period, late penalty
+    //Not specified: Late date
     
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_BeforeOntimeExtensionHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).minusHours(1), EXTENSION_DATE, true);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -1035,7 +953,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_OnExtensionHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT), EXTENSION_DATE, true);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -1045,7 +963,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterOntimeExtensionLessThan1PeriodHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).plusHours(1), EXTENSION_DATE, true);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -1055,7 +973,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterOntimeExtensionExactly1PeriodHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).plus(LATE_PERIOD), EXTENSION_DATE, true);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -1065,7 +983,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterOntimeExtensionBetween1And2PeriodsHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).plus(LATE_PERIOD).plusHours(1), EXTENSION_DATE, true);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -1075,19 +993,20 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodSpecified_AfterOntimeExtensionExactly2PeriodsHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, null, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, null);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).plus(LATE_PERIOD).plus(LATE_PERIOD), EXTENSION_DATE, true);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
         assertEquals(2*LATE_PENALTY, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
-    //Ontime specified, Late specified - late date specified
+    //Specified:     On time date, late period, late penalty, late date
+    //Not specified: none
     
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_BeforeOntimeExtensionHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).minusHours(1), EXTENSION_DATE, true);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -1097,7 +1016,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_OnOntimeExtensionHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT), EXTENSION_DATE, true);
         assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
@@ -1107,7 +1026,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterOntimeExtensionLessThan1PeriodHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).plusHours(1), EXTENSION_DATE, true);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -1117,7 +1036,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterOntimeExtensionExactly1PeriodHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).plus(LATE_PERIOD), EXTENSION_DATE, true);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -1127,7 +1046,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterOntimeExtensionBetween1And2PeriodsHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).plus(LATE_PERIOD).plusHours(1), EXTENSION_DATE, true);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -1137,7 +1056,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterOntimeExtensionExactly2PeriodsHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(ON_TIME_DATE.plus(EXTENSION_SHIFT).plus(LATE_PERIOD).plus(LATE_PERIOD), EXTENSION_DATE, true);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -1147,7 +1066,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_OnLateExtensionHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(LATE_DATE.plus(EXTENSION_SHIFT), EXTENSION_DATE, true);
         assertEquals(TimeStatus.LATE, resolution.getTimeStatus());
@@ -1156,7 +1075,7 @@ public class DeadlineInfoTest
     @Test
     public void testVariableDeadline_OntimeLatePeriodAndDateSpecified_AfterLateExtensionHandin_Extension_Shift()
     {
-        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_DATE, LATE_PENALTY, LATE_PERIOD);
+        DeadlineInfo info = DeadlineInfo.newVariableDeadlineInfo(ON_TIME_DATE, LATE_PERIOD, LATE_PENALTY, LATE_DATE);
         
         DeadlineResolution resolution = info.apply(LATE_DATE.plus(EXTENSION_SHIFT).plusHours(1), EXTENSION_DATE, true);
         assertEquals(TimeStatus.NC_LATE, resolution.getTimeStatus());

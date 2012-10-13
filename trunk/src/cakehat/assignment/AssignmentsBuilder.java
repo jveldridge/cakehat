@@ -97,8 +97,8 @@ public class AssignmentsBuilder
         else if(DeadlineInfo.Type.VARIABLE.equals(deadlineType))
         {
             info = DeadlineInfo.newVariableDeadlineInfo(dbGradableEvent.getOnTimeDate(),
-                                                        dbGradableEvent.getLateDate(), dbGradableEvent.getLatePoints(), 
-                                                        dbGradableEvent.getLatePeriod());
+                                                        dbGradableEvent.getLatePeriod(), dbGradableEvent.getLatePoints(),
+                                                        dbGradableEvent.getLateDate());
         }
         else if(DeadlineInfo.Type.FIXED.equals(deadlineType))
         {
