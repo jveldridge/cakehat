@@ -32,6 +32,12 @@ svn copy https://cakehat.googlecode.com/svn/trunk https://cakehat.googlecode.com
 
 Where `[branch name]` has the format `release[Major.Minor]`. Example: `release6.0`
 
+To update the symbolic link:
+{{{
+ln -nsf 6.0 latest
+}}}
+This will update the symbolic link `latest` to point to the release folder `6.0`.
+
 =Release Types=
 There are three type of releases for cakehat:
 1. major (#.0.0)
