@@ -220,7 +220,8 @@ public class CSVExportTask extends LongRunningTask
                         {
                             Part part = ge.getParts().get(partIndex);
                             row3.add(part.getName());
-                            String outOfString = part.getGradingSheet() == null ?
+                            String outOfString = part.getGradingSheet() == null || 
+                                                 part.getGradingSheet().getOutOf() == null ?
                                     "--" : Double.toString(part.getGradingSheet().getOutOf());
                             row5.add(outOfString);
                             
