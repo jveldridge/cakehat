@@ -43,7 +43,7 @@ public class ErrorReporter
             @Override
             public void report(String message, Exception exception)
             {
-                report(message, exception);
+                ErrorReporter.report(message, exception);
             }
         };
         
