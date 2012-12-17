@@ -1581,8 +1581,8 @@ public class DatabaseImpl implements Database
             
             //get IDs of groups that already have a group grading sheet
             Set<Integer> groupsWithGradingSheet = new HashSet<Integer>();
-            PreparedStatement ps = conn.prepareStatement("SELECT agid FROM groupgradingsheet WHERE assignedto NOT NULL "
-                    + "AND pid IN (" + this.idSetToString(distribution.keySet()) + ")");
+            PreparedStatement ps = conn.prepareStatement("SELECT agid FROM groupgradingsheet"
+                    + " WHERE pid IN (" + this.idSetToString(distribution.keySet()) + ")");
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 groupsWithGradingSheet.add(rs.getInt("agid"));
