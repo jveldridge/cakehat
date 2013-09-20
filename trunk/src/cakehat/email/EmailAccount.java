@@ -32,7 +32,7 @@ public class EmailAccount
     /**
      * The address of the Brown CS email SMTP server.
      */
-    private static final String EMAIL_HOST = "smtps.cs.brown.edu";
+    private static final String EMAIL_HOST = "smtp.gmail.com";
     
     /**
      * The port of the Brown CS SMTP server.

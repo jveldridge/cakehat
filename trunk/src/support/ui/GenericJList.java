@@ -77,23 +77,6 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
 
     /**
-     * This method cannot be made type-safe due to Java's implementation of generics: setListData(Vector<?>) and
-     * setListData(Vector<E>) would result in a signature clash due to type erasure.
-     *
-     * @see #setListData(java.lang.Iterable)
-     * @see #setListData(java.lang.Iterable, boolean)
-     *
-     * @param values
-     *
-     * @deprecated deprecated due to lack of type-safety
-     */
-    @Override
-    public void setListData(java.util.Vector<?> values)
-    {
-        throw new UnsupportedOperationException("Not valid for GenericJList. Please use setListData(Iterable<E>)");
-    }
-
-    /**
      * Sets the values displayed in the list. Replaces all existing values. This will result in no values being
      * selected.
      *
