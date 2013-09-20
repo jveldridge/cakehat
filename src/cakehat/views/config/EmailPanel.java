@@ -336,7 +336,7 @@ class EmailPanel extends JPanel
             _contentPanel.setLayout(new BoxLayout(_contentPanel, BoxLayout.Y_AXIS));
             this.addContentComponent(_contentPanel);
             
-            final String from = account + "@" + Allocator.getConstants().getEmailDomain();
+            final String from = account;
             final String to = Allocator.getUserUtilities().getUserLogin() + "@" +
                               Allocator.getConstants().getEmailDomain();
             final String subject = "cakehat Email Verification";
